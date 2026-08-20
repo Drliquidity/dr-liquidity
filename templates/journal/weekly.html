@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Weekly Grid - {{ site_name }} Journal{% endblock %}
+
+{% block content %}
+<section class="py-10 mesh-bg min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-brand-green-700">Journal · Weekly Grid</p>
+        <h1 class="text-3xl lg:text-4xl font-extrabold mt-1">Trading Week View</h1>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('journal.monthly_view') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Monthly</a>
+        <a href="{{ url_for('journal.calendar_view') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Calendar</a>
+        <a href="{{ url_for('journal.list_entries') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">List</a>
+        <a href="{{ url_for('journal.analytics') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Analytics</a>
+        <a href="{{ url_for('journal.new_entry') }}" class="btn-3d px-4 py-2 bg-brand-green-800 text-white text-sm font-semibold rounded-lg">+ New Trade</a>
+      </div>
+    </div>
+
+    <!-- Month nav + summary -->
+    <div class="holo-card relative rounded-2xl p-6 mb-6 glow-ambient">
+      <div class="holo-inner">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+          <div class="flex items-center gap-2">
+            <a href="{{ url_for('journal.weekly_view', year=prev_year, month=prev_month) }}" class="p-2 rounded-lg bg-white/70 border border-brand-green-200 hover:bg-brand-green-50 hover:border-brand-green-400 transition">
+              <svg class="w-5 h-5 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+            <h2 class="text-2xl lg:text-3xl font-extrabold text-brand-green-900 min-w-[200px] text-center">
+              {{ month_name }} {{ year }}
+            </h2>
+            <a href="{{ url_for('journal.weekly_view', year=next_year, month=next_month) }}" class="p-2 rounded-lg bg-white/70 border border-brand-green-200 hover:bg-brand-green-50 hover:border-brand-green-400 transition">
+              <svg class="w-5 h-5 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+          <a href="{{ url_for('journal.weekly_view') }}" class="text-sm font-semibold text-brand-green-700 hover:text-brand-green-900">Jump to today</a>
+        </div>
+
+        <!-- Top stats row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Monthly Net P&L</p>
+            <p class="text-2xl font-extrabold font-mono mt-0.5 {% if month_total >= 0 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">
+              {% if month_total >= 0 %}+{% endif %}${{ "{:,.0f}".format(month_total) }}
+            </p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Total Trades</p>
+            <p class="text-2xl font-extrabold text-brand-green-900 mt-0.5">{{ month_count }}</p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Weeks Tracked</p>
+            <p class="text-2xl font-extrabold text-brand-green-900 mt-0.5">{{ weeks_in_month }}</p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Best Week</p>
+            <p class="text-2xl font-extrabold font-mono text-brand-green-700 mt-0.5">
+              +${{ "{:,.0f}".format(week_totals|map(attribute='pnl')|max) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly grid -->
+    <div class="holo-card relative rounded-2xl p-4 md:p-6 glow-border overflow-x-auto">
+      <div class="holo-inner">
+        <table class="w-full border-collapse">
+          <thead>
+            <!-- Header row: empty cell + week numbers + Day Total -->
+            <tr>
+              <th class="p-2 text-left text-xs uppercase tracking-wider text-gray-500 font-bold w-32">Day \ Week</th>
+              {% for w in range(1, weeks_in_month + 1) %}
+              <th class="p-2 text-center text-xs uppercase tracking-wider text-brand-green-700 font-bold min-w-[120px]">
+                <div class="flex flex-col items-center">
+                  <span>Week {{ w }}</span>
+                  <span class="text-[10px] text-gray-400 normal-case font-normal">{% set wk_start = week_start_date(year, month, w) %}{{ wk_start.strftime('%b %d') }}{% set wk_end_date = wk_start + timedelta(days=4) %}{% if wk_end_date.month == month %}-{{ wk_end_date.strftime('%d') }}{% else %}-{{ wk_end_date.strftime('%b %d') }}{% endif %}</span>
+                </div>
+              </th>
+              {% endfor %}
+              <th class="p-2 text-center text-xs uppercase tracking-wider text-brand-green-900 font-bold bg-brand-green-50 min-w-[120px]">
+                <div class="flex flex-col items-center">
+                  <span>Day Total</span>
+                  <span class="text-[10px] text-gray-400 normal-case font-normal">All weeks</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in grid %}
+            <tr>
+              <!-- Day label (left column) -->
+              <th class="p-3 text-left text-sm font-bold text-brand-green-900 bg-brand-green-50/30 border-r border-brand-green-100">
+                <div class="flex flex-col">
+                  <span>{{ row.day_name[:3] }}</span>
+                  <span class="text-[10px] text-gray-500 normal-case font-normal">{{ row.day_name }}</span>
+                </div>
+              </th>
+
+              <!-- Day cells (one per week) -->
+              {% for cell in row.cells %}
+              <td class="p-2">
+                <div class="group relative aspect-[5/3] min-h-[80px] rounded-xl border-2 transition-all
+                    {% if cell.pnl > 0 %}{% if cell.pnl > 500 %}bg-brand-green-600 border-brand-green-700 text-white hover:scale-105
+                    {% elif cell.pnl > 100 %}bg-brand-green-400 border-brand-green-500 text-brand-green-900 hover:scale-105
+                    {% else %}bg-brand-green-200 border-brand-green-300 text-brand-green-900 hover:scale-105
+                    {% endif %}{% elif cell.pnl < 0 %}{% if cell.pnl < -500 %}bg-red-600 border-red-700 text-white hover:scale-105
+                    {% elif cell.pnl < -100 %}bg-red-400 border-red-500 text-red-900 hover:scale-105
+                    {% else %}bg-red-200 border-red-300 text-red-900 hover:scale-105
+                    {% endif %}{% else %}bg-white/40 border-brand-green-100 text-gray-400 hover:border-brand-green-300
+                    {% endif %}"
+                  title="{{ row.day_name }} — Week {{ cell.week }}: {% if cell.count %}{{ cell.count }} trade(s), ${{ '{:,.0f}'.format(cell.pnl) }}{% else %}No trades{% endif %}">
+                  <div class="absolute inset-0 p-2 flex flex-col items-center justify-center">
+                    {% if cell.pnl != 0 %}
+                    <p class="font-mono font-bold text-lg leading-none">{% if cell.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(cell.pnl) }}</p>
+                    <p class="text-[10px] leading-none opacity-80 mt-0.5">{{ cell.count }} trade{{ '' if cell.count == 1 else 's' }}</p>
+                    {% else %}
+                    <p class="text-[10px] opacity-60">—</p>
+                    {% endif %}
+                  </div>
+                  {% if cell.entries %}
+                  <div class="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 bg-white border-2 border-brand-green-300 rounded-xl shadow-2xl p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 text-left text-gray-800">
+                    <p class="font-bold text-brand-green-900 mb-1">{{ row.day_name }}, Week {{ cell.week }}</p>
+                    <p class="text-xs text-gray-500 mb-2">{{ cell.count }} trade{{ '' if cell.count == 1 else 's' }} · <span class="{% if cell.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %} font-bold">${{ '{:,.0f}'.format(cell.pnl) }}</span></p>
+                    <div class="space-y-1 max-h-40 overflow-y-auto">
+                      {% for e in cell.entries %}
+                      <div class="text-xs flex items-center justify-between p-1 bg-brand-green-50/50 rounded">
+                        <span><span class="font-mono font-bold">{{ e.symbol }}</span> <span class="px-1 rounded {% if e.direction == 'LONG' %}bg-brand-green-200 text-brand-green-800{% else %}bg-red-200 text-red-700{% endif %} text-[10px]">{{ e.direction }}</span> {{ e.contracts }}x</span>
+                        <span class="font-mono font-bold {% if e.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">{% if e.pnl >= 0 %}+{% endif %}${{ '{:,.0f}'.format(e.pnl) }}</span>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </td>
+              {% endfor %}
+
+              <!-- Day total (rightmost column) -->
+              <td class="p-2 bg-brand-green-50/40">
+                <div class="aspect-[5/3] min-h-[80px] rounded-xl border-2 border-brand-green-300 bg-white flex flex-col items-center justify-center
+                    {% if row.day_total >= 0 %}text-glow{% endif %}">
+                  <p class="font-mono font-extrabold text-xl leading-none {% if row.day_total >= 0 %}text-brand-green-900{% else %}text-red-700{% endif %}">
+                    {% if row.day_total >= 0 %}+{% endif %}${{ "%.0f"|format(row.day_total) }}
+                  </p>
+                  <p class="text-[10px] text-gray-500 mt-0.5">{{ row.day_count }} total</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+
+            <!-- Bottom row: Week Total -->
+            <tr class="border-t-2 border-brand-green-300">
+              <th class="p-3 text-left text-sm font-bold text-brand-green-900 bg-brand-green-50 border-r border-brand-green-100">
+                <div class="flex flex-col">
+                  <span>📊</span>
+                  <span class="text-[10px] text-gray-500 normal-case font-normal">Week Total</span>
+                </div>
+              </th>
+              {% for wt in week_totals %}
+              <td class="p-2 bg-brand-green-50/40">
+                <div class="aspect-[5/3] min-h-[80px] rounded-xl border-2 border-brand-green-400 bg-white flex flex-col items-center justify-center glow-border">
+                  <p class="font-mono font-extrabold text-xl leading-none {% if wt.pnl >= 0 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">
+                    {% if wt.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(wt.pnl) }}
+                  </p>
+                  <p class="text-[10px] text-gray-500 mt-0.5">Week {{ wt.week }}</p>
+                </div>
+              </td>
+              {% endfor %}
+              <!-- Month grand total -->
+              <td class="p-2 bg-gradient-to-br from-brand-green-100 to-brand-green-200">
+                <div class="aspect-[5/3] min-h-[80px] rounded-xl border-2 border-brand-green-600 flex flex-col items-center justify-center glow-ambient-strong">
+                  <p class="text-[10px] uppercase tracking-wider font-bold text-brand-green-800">Month</p>
+                  <p class="font-mono font-extrabold text-2xl leading-none mt-1 {% if month_total >= 0 %}text-brand-green-900 text-glow-strong{% else %}text-red-700{% endif %}">
+                    {% if month_total >= 0 %}+{% endif %}${{ "{:,.0f}".format(month_total) }}
+                  </p>
+                  <p class="text-[10px] text-gray-600 mt-0.5">{{ month_count }} trades</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Legend -->
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs">
+          <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-brand-green-200 border border-brand-green-300"></div><span class="text-gray-600">Small win</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-brand-green-400 border border-brand-green-500"></div><span class="text-gray-600">Medium win</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-brand-green-600 border border-brand-green-700"></div><span class="text-gray-600">Big win</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-red-200 border border-red-300"></div><span class="text-gray-600">Small loss</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-red-400 border border-red-500"></div><span class="text-gray-600">Medium loss</span></div>
+          <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-red-600 border border-red-700"></div><span class="text-gray-600">Big loss</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

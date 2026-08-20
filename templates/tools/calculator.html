@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}ROI Calculator - {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="py-12 mesh-bg min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-10">
+      <p class="text-xs font-bold uppercase tracking-widest text-brand-green-700">Tools</p>
+      <h1 class="text-3xl lg:text-5xl font-extrabold mt-2 text-black">
+        ROI <span class="text-holographic text-glow">Calculator</span>
+      </h1>
+      <p class="mt-3 text-gray-600 max-w-2xl mx-auto">See how much you can make trading a prop firm challenge. Adjust the inputs to match your edge.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <!-- Input form -->
+      <form method="POST" class="lg:col-span-2 holo-card relative rounded-2xl p-6 glow-ambient space-y-4">
+        <div class="holo-inner space-y-4">
+          <h2 class="text-lg font-extrabold text-brand-green-900 mb-2">Your Setup</h2>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Account Size ($)</label>
+            <input type="number" name="account_size" value="{{ result.account_size if result else 100000 }}" min="10000" step="1000" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none font-mono">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Profit Target ($)</label>
+            <input type="number" name="profit_target" value="{{ result.profit_target if result else 6000 }}" min="500" step="100" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none font-mono">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Profit Split (% to you)</label>
+            <select name="profit_split" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none font-mono">
+              {% for split in [70, 75, 80, 85, 90, 100] %}
+                <option value="{{ split }}" {% if result and result.profit_split == split %}selected{% elif not result and split == 80 %}selected{% endif %}>{{ split }}%</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Challenge Fee ($)</label>
+            <input type="number" name="challenge_fee" value="{{ result.challenge_fee if result else 295 }}" min="50" step="10" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none font-mono">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Activation Fee ($)</label>
+            <input type="number" name="activation_fee" value="{{ result.activation_fee if result else 0 }}" min="0" step="10" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none font-mono">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Discount Code (% off)</label>
+            <input type="number" name="discount_percent" value="{{ result.discount_percent if result else 0 }}" min="0" max="100" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none font-mono">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Payouts / Month (attempts)</label>
+            <input type="number" name="estimated_payouts_per_month" value="{{ result.payouts_per_month if result else 4 }}" min="1" max="30" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Your Pass Rate (%)</label>
+            <input type="number" name="pass_rate" value="{{ result.pass_rate if result else 50 }}" min="0" max="100" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:border-brand-green-700 focus:outline-none">
+            <p class="text-xs text-gray-500 mt-1">Avg trader: 25-40%. Skilled: 50-65%.</p>
+          </div>
+
+          <button type="submit" class="btn-3d w-full px-6 py-3.5 bg-brand-green-800 text-white font-bold rounded-xl text-base mt-2">
+            Calculate ROI →
+          </button>
+        </div>
+      </form>
+
+      <!-- Results -->
+      <div class="lg:col-span-3 space-y-4">
+        {% if result and not result.error %}
+        <!-- Big numbers -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 stagger-in">
+          <div class="holo-card relative rounded-2xl p-5 glow-border">
+            <div class="holo-inner">
+              <p class="text-xs uppercase tracking-wider text-gray-600 font-bold">Payout / Pass</p>
+              <p class="text-2xl font-extrabold font-mono text-brand-green-900 mt-1 text-glow">${{ "{:,.0f}".format(result.payout_per_pass) }}</p>
+            </div>
+          </div>
+          <div class="holo-card relative rounded-2xl p-5 glow-border">
+            <div class="holo-inner">
+              <p class="text-xs uppercase tracking-wider text-gray-600 font-bold">Monthly Gross</p>
+              <p class="text-2xl font-extrabold font-mono text-brand-green-900 mt-1 text-glow">${{ "{:,.0f}".format(result.gross_monthly) }}</p>
+            </div>
+          </div>
+          <div class="holo-card relative rounded-2xl p-5 glow-border">
+            <div class="holo-inner">
+              <p class="text-xs uppercase tracking-wider text-gray-600 font-bold">Monthly Costs</p>
+              <p class="text-2xl font-extrabold font-mono text-red-700 mt-1">${{ "{:,.0f}".format(result.total_costs) }}</p>
+            </div>
+          </div>
+          <div class="holo-card relative rounded-2xl p-5 glow-border col-span-2 md:col-span-1">
+            <div class="holo-inner">
+              <p class="text-xs uppercase tracking-wider text-gray-600 font-bold">Net / Month</p>
+              <p class="text-3xl font-extrabold font-mono mt-1 {% if result.net_monthly >= 0 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">
+                {% if result.net_monthly >= 0 %}+{% endif %}${{ "{:,.0f}".format(result.net_monthly) }}
+              </p>
+            </div>
+          </div>
+          <div class="holo-card relative rounded-2xl p-5 glow-border col-span-2">
+            <div class="holo-inner">
+              <p class="text-xs uppercase tracking-wider text-gray-600 font-bold">Yearly Projection</p>
+              <p class="text-3xl font-extrabold font-mono mt-1 {% if result.yearly_net >= 0 %}text-brand-green-900 text-glow-strong{% else %}text-red-700{% endif %}">
+                {% if result.yearly_net >= 0 %}+{% endif %}${{ "{:,.0f}".format(result.yearly_net) }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1">After ${{ "{:,.0f}".format(result.yearly_costs) }} in costs</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scenarios -->
+        <div class="holo-card relative rounded-2xl p-6 glow-ambient">
+          <div class="holo-inner">
+            <h3 class="text-lg font-extrabold text-brand-green-900 mb-4">Risk-Adjusted Scenarios</h3>
+            <div class="space-y-2">
+              {% for s in result.scenarios %}
+              <div class="flex items-center justify-between p-3 bg-white/70 backdrop-blur rounded-lg border border-brand-green-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-brand-green-800 text-white flex items-center justify-center text-sm font-bold">{{ s.pass_rate }}%</div>
+                  <div>
+                    <p class="text-sm font-semibold">Pass rate</p>
+                    <p class="text-xs text-gray-500">{{ s.roi|abs|round(0)|int }}% ROI</p>
+                  </div>
+                </div>
+                <p class="font-mono font-extrabold text-lg {% if s.net >= 0 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">
+                  {% if s.net >= 0 %}+{% endif %}${{ "{:,.0f}".format(s.net) }}/mo
+                </p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Break-even -->
+        <div class="holo-card relative rounded-2xl p-6 glow-ambient">
+          <div class="holo-inner">
+            <h3 class="text-lg font-extrabold text-brand-green-900 mb-3">Break-Even Analysis</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-gray-500">Cost per attempt</p>
+                <p class="text-2xl font-extrabold font-mono text-brand-green-900">${{ "{:,.0f}".format(result.cost_per_attempt) }}</p>
+                {% if result.discount_percent > 0 %}
+                <p class="text-xs text-brand-green-700">After {{ result.discount_percent }}% discount</p>
+                {% endif %}
+              </div>
+              <div>
+                <p class="text-gray-500">Passes to break even</p>
+                <p class="text-2xl font-extrabold font-mono text-brand-green-900">{{ result.break_even_passes }}</p>
+                <p class="text-xs text-gray-500">consecutive passes</p>
+              </div>
+            </div>
+            {% if result.cheapest %}
+            <div class="mt-4 p-3 bg-brand-green-50 border border-brand-green-200 rounded-lg">
+              <p class="text-xs text-gray-600">💡 Cheapest challenge in our catalog:</p>
+              <p class="font-bold text-brand-green-900">
+                <a href="{{ url_for('firms.firm_detail', slug=result.cheapest.firm.slug) }}" class="hover:underline">{{ result.cheapest.firm.name }} {{ result.cheapest.name }}</a>
+                — ${{ "{:,.0f}".format(result.cheapest.challenge_fee) }}
+              </p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% elif result and result.error %}
+        <div class="holo-card relative rounded-2xl p-6">
+          <p class="text-red-700">Error: {{ result.error }}</p>
+        </div>
+        {% else %}
+        <div class="holo-card relative rounded-2xl p-8 text-center glow-ambient">
+          <div class="holo-inner">
+            <div class="w-16 h-16 rounded-2xl bg-brand-green-100 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            </div>
+            <h3 class="text-xl font-extrabold text-brand-green-900 mb-2">Enter your numbers</h3>
+            <p class="text-gray-600">Fill out the form on the left to see your projected ROI, monthly income, and break-even analysis.</p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

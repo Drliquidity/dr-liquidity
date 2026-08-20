@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Verify Purchase - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="py-10 lg:py-14 relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10 opacity-60"></div>
+
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <a href="{{ url_for('purchases.list_purchases') }}" class="inline-flex items-center gap-1.5 text-sm text-brand-green-800 hover:text-brand-green-900 font-bold mb-4">
+      <span>←</span> Back to purchases
+    </a>
+    <span class="chip-premium mb-3 inline-flex">
+      <span class="live-dot"></span>
+      <span>Verification</span>
+    </span>
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-black mt-1">
+      Verify your <span class="gradient-shimmer">purchase</span>
+    </h1>
+    <p class="text-gray-600 mt-2">Submit your prop firm challenge purchase for verification. Once approved, you unlock the "Verified Buyer" badge and exclusive perks.</p>
+  </div>
+</section>
+
+<!-- FORM -->
+<section class="pb-12 relative">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+    <form method="POST" class="space-y-5">
+      <!-- Purchase details -->
+      <div class="glass-card p-5 lg:p-6 reveal-3d">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="icon-premium" style="width:1.75rem;height:1.75rem;border-radius:0.5rem;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          </div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Purchase Details</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Prop Firm *</label>
+            <select name="firm_id" required class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-semibold">
+              <option value="">— Select firm —</option>
+              {% for f in firms %}
+                <option value="{{ f.id }}" {% if preselected_firm_id == f.id %}selected{% endif %}>{{ f.name }} <span>({{ f.discount_code }} - {{ f.discount_percent }}% off)</span></option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Plan <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+            <select name="plan_id" class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-semibold">
+              <option value="">— Skip —</option>
+              {% for p in plans %}
+                <option value="{{ p.id }}" {% if preselected_plan_id == p.id %}selected{% endif %}>{{ p.name }} — ${{ "{:,}".format(p.account_size) }} (${{ "{:,.0f}".format(p.challenge_fee) }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Money + Date -->
+      <div class="glass-card p-5 lg:p-6 reveal-3d" style="animation-delay: 0.1s">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="icon-premium" style="width:1.75rem;height:1.75rem;border-radius:0.5rem;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Money & Date</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Amount Paid *</label>
+            <input type="number" step="0.01" name="amount_paid" required placeholder="0.00" class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Purchase Date *</label>
+            <input type="date" name="purchase_date" required value="{{ today }}" class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-semibold">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Discount Code</label>
+            <input type="text" name="discount_code_used" placeholder="e.g. PERK" class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Discount Amount</label>
+            <input type="number" step="0.01" name="discount_amount" value="0" class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-mono font-bold">
+          </div>
+        </div>
+      </div>
+
+      <!-- Verification details -->
+      <div class="glass-card p-5 lg:p-6 reveal-3d" style="animation-delay: 0.15s">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="icon-premium" style="width:1.75rem;height:1.75rem;border-radius:0.5rem;">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+          </div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Verification Info</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Order Reference / Email</label>
+            <input type="text" name="order_reference" placeholder="Order ID, email used, or invoice number" class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-semibold">
+            <p class="text-[10px] text-gray-500 mt-1 font-semibold">Helps us verify the purchase faster.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Account ID <span class="text-gray-400 font-normal normal-case">(from prop firm, if any)</span></label>
+            <input type="text" name="account_id" placeholder="Your prop firm account number" class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-300 focus:outline-none transition font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-bold mb-1.5 text-brand-green-900 uppercase tracking-wider">Receipt URL <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+            <input type="url" name="receipt_url" placeholder="https://..." class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-semibold">
+            <p class="text-[10px] text-gray-500 mt-1 font-semibold">Screenshot link from cloud storage, Discord, etc.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 pt-2 reveal-3d" style="animation-delay: 0.2s">
+        <button type="submit" class="btn-premium magnetic group flex-1 sm:flex-initial">
+          <span>Submit for Verification</span>
+          <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+        </button>
+        <a href="{{ url_for('purchases.list_purchases') }}" class="btn-premium-outline magnetic group">
+          <span>Cancel</span>
+        </a>
+      </div>
+    </form>
+
+    <!-- Why verify card -->
+    <div class="glass-card p-5 lg:p-6 reveal-3d" style="animation-delay: 0.25s">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <p class="text-sm font-black text-brand-green-900">Why verify?</p>
+      </div>
+      <ul class="space-y-2 text-sm text-gray-700">
+        <li class="flex items-start gap-2"><span class="text-emerald-500 font-black flex-shrink-0">✓</span> <span>"Verified Buyer" badge on your reviews</span></li>
+        <li class="flex items-start gap-2"><span class="text-emerald-500 font-black flex-shrink-0">✓</span> <span>Helps the community trust your reviews</span></li>
+        <li class="flex items-start gap-2"><span class="text-emerald-500 font-black flex-shrink-0">✓</span> <span>Early access to new features</span></li>
+        <li class="flex items-start gap-2"><span class="text-emerald-500 font-black flex-shrink-0">✓</span> <span>Eligible for cashback & rewards programs</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

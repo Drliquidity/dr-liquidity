@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Analytics - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="py-10 lg:py-14 relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10"></div>
+  <div class="hero-orb hero-orb-2 -z-10 opacity-60"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-8 reveal-3d">
+      <div>
+        <span class="chip-premium mb-3 inline-flex">
+          <span class="live-dot"></span>
+          <span>Performance · {{ total }} Trades</span>
+        </span>
+        <h1 class="text-4xl lg:text-5xl font-black tracking-tight text-black mt-1">
+          <span class="gradient-shimmer">Performance</span> Analytics
+        </h1>
+        <p class="text-gray-600 mt-2">Equity curve, drawdown, streaks, and edge breakdown.</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('journal.list_entries') }}" class="btn-premium-outline magnetic group">
+          <span>← Journal</span>
+        </a>
+        <a href="{{ url_for('journal.monthly_view') }}" class="btn-premium-outline magnetic group">
+          <span>Monthly P&L</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EQUITY CURVE -->
+<section class="pb-8 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="glass-card p-5 lg:p-6 reveal-3d">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Equity Curve</p>
+          <h2 class="text-xl font-black text-brand-green-900 mt-0.5">Cumulative P&L Over Time</h2>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Final Equity</p>
+          <p class="font-mono font-black text-2xl {% if total_pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">
+            {% if equity_curve %}${{ "{:,.0f}".format(equity_curve[-1].equity) }}{% else %}—{% endif %}
+          </p>
+        </div>
+      </div>
+
+      {% if equity_curve|length > 1 %}
+      <div class="relative">
+        <svg viewBox="0 0 1200 280" class="w-full h-72" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="equityStroke" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#145a36"/>
+              <stop offset="50%" stop-color="#10b981"/>
+              <stop offset="100%" stop-color="#34d399"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Grid lines -->
+          {% for y in [0, 70, 140, 210, 280] %}
+          <line x1="0" y1="{{ y }}" x2="1200" y2="{{ y }}" stroke="#e5e7eb" stroke-dasharray="2 4" stroke-width="0.5"/>
+          {% endfor %}
+
+          {% set min_eq = equity_curve|map(attribute='equity')|min %}
+          {% set max_eq = equity_curve|map(attribute='equity')|max %}
+          {% set range_eq = (max_eq - min_eq) or 1 %}
+          {% set w_step = (1200 / (equity_curve|length - 1)) if equity_curve|length > 1 else 0 %}
+
+          <!-- Zero line if applicable -->
+          {% if min_eq < 0 < max_eq %}
+            {% set zero_y = 280 - ((0 - min_eq) / range_eq * 260 + 10) %}
+            <line x1="0" y1="{{ zero_y }}" x2="1200" y2="{{ zero_y }}" stroke="#ef4444" stroke-dasharray="4 4" stroke-width="1"/>
+            <text x="10" y="{{ zero_y - 5 }}" font-size="10" fill="#ef4444" font-weight="bold">BREAK-EVEN</text>
+          {% endif %}
+
+          <!-- Area fill -->
+          <polygon fill="url(#equityFill)"
+            points="0,280
+            {% for p in equity_curve %}{{ loop.index0 * w_step }},{{ 280 - ((p.equity - min_eq) / range_eq * 260 + 10) }} {% endfor %}
+            1200,280"/>
+
+          <!-- Line -->
+          <polyline fill="none" stroke="url(#equityStroke)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+            points="
+            {% for p in equity_curve %}{{ loop.index0 * w_step }},{{ 280 - ((p.equity - min_eq) / range_eq * 260 + 10) }} {% endfor %}
+            "/>
+
+          <!-- Data points -->
+          {% for p in equity_curve %}
+            {% if loop.first or loop.last or loop.index0 % 5 == 0 %}
+            <circle cx="{{ loop.index0 * w_step }}" cy="{{ 280 - ((p.equity - min_eq) / range_eq * 260 + 10) }}" r="4" fill="#fff" stroke="#10b981" stroke-width="2"/>
+            {% endif %}
+          {% endfor %}
+        </svg>
+      </div>
+      <div class="flex justify-between text-xs mt-2 font-bold">
+        <span class="text-gray-500">Start: ${{ "{:,.0f}".format(equity_curve[0].equity) }}</span>
+        <span class="text-brand-green-700">Final: ${{ "{:,.0f}".format(equity_curve[-1].equity) }}</span>
+      </div>
+      {% else %}
+      <div class="text-center py-12 text-gray-500">
+        <p>Need at least 2 trades to draw equity curve.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- RISK METRICS + SETUP QUALITY -->
+<section class="py-6 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <!-- Risk Metrics -->
+      <div class="glass-card p-5 lg:p-6 reveal-3d" style="animation-delay: 0.1s">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Risk Metrics</p>
+            <h2 class="text-xl font-black text-brand-green-900 mt-0.5">Streaks & Drawdown</h2>
+          </div>
+          <div class="icon-premium" style="width:2.25rem;height:2.25rem;border-radius:0.5rem;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-3 rounded-xl bg-red-50 border border-red-100">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-red-600 font-black">Max Drawdown</p>
+              <p class="text-xs text-gray-600 mt-0.5">Worst peak-to-trough</p>
+            </div>
+            <p class="font-mono font-black text-2xl text-red-600">-${{ "{:,.0f}".format(max_dd) }}</p>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-brand-green-50 border border-brand-green-100">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-brand-green-700 font-black">Longest Win Streak</p>
+              <p class="text-xs text-gray-600 mt-0.5">Consecutive wins</p>
+            </div>
+            <p class="font-mono font-black text-2xl text-brand-green-700">{{ longest_win }} 🔥</p>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-orange-50 border border-orange-100">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-orange-600 font-black">Longest Loss Streak</p>
+              <p class="text-xs text-gray-600 mt-0.5">Consecutive losses</p>
+            </div>
+            <p class="font-mono font-black text-2xl text-orange-600">{{ longest_loss }}</p>
+          </div>
+          <div class="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-brand-green-50 to-emerald-50 border border-brand-green-200">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-brand-green-700 font-black">Total Net P&L</p>
+              <p class="text-xs text-gray-600 mt-0.5">All-time</p>
+            </div>
+            <p class="font-mono font-black text-2xl {% if total_pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">
+              {% if total_pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(total_pnl) }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Setup Quality -->
+      <div class="glass-card p-5 lg:p-6 reveal-3d" style="animation-delay: 0.15s">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">P&L by Setup Quality</p>
+            <h2 class="text-xl font-black text-brand-green-900 mt-0.5">Edge by Grade</h2>
+          </div>
+          <div class="icon-premium" style="width:2.25rem;height:2.25rem;border-radius:0.5rem;">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+          </div>
+        </div>
+        <div class="space-y-2.5">
+          {% for q in range(1, 6) %}
+            {% if by_quality.get(q) %}
+              {% set stats = by_quality[q] %}
+              {% set wr = (stats.wins / stats.trades * 100) if stats.trades else 0 %}
+              <div class="group">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-black text-brand-green-900 flex items-center gap-1.5">
+                    {% for s in range(q) %}★{% endfor %}
+                    <span class="text-xs text-gray-500 font-semibold ml-1">{{ stats.trades }} trades · {{ "%.0f"|format(wr) }}% WR</span>
+                  </span>
+                  <span class="font-mono font-black text-sm {% if stats.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">
+                    {% if stats.pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(stats.pnl) }}
+                  </span>
+                </div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all
+                    {% if stats.pnl >= 0 %}bg-gradient-to-r from-brand-green-500 to-emerald-400{% else %}bg-gradient-to-r from-red-500 to-red-400{% endif %}"
+                    style="width: {{ wr }}%;"></div>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BY DAY OF WEEK -->
+<section class="py-6 pb-12 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="glass-card p-5 lg:p-6 reveal-3d" style="animation-delay: 0.2s">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">By Day of Week</p>
+          <h2 class="text-xl font-black text-brand-green-900 mt-0.5">When You Trade Best</h2>
+        </div>
+        <div class="icon-premium" style="width:2.25rem;height:2.25rem;border-radius:0.5rem;">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {% for dow in ['Monday','Tuesday','Wednesday','Thursday','Friday'] %}
+          {% set stats = by_dow.get(dow, {'trades': 0, 'pnl': 0, 'wins': 0}) %}
+          {% set wr = (stats.wins / stats.trades * 100) if stats.trades else 0 %}
+          <div class="relative p-4 rounded-xl bg-white border-2 border-brand-green-100 overflow-hidden group hover:border-brand-green-400 transition-colors
+              {% if stats.pnl > 0 %}border-l-4 border-l-brand-green-500{% elif stats.pnl < 0 %}border-l-4 border-l-red-500{% endif %}">
+            <div class="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-30
+              {% if stats.pnl >= 0 %}bg-emerald-300{% else %}bg-red-300{% endif %}"></div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-500 relative">{{ dow[:3] }}</p>
+            <p class="font-mono font-black text-2xl mt-1 relative {% if stats.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">
+              {% if stats.pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(stats.pnl) }}
+            </p>
+            <div class="mt-2 flex items-center justify-between text-[10px] font-bold relative">
+              <span class="text-gray-500">{{ stats.trades }} trades</span>
+              {% if stats.trades %}
+              <span class="px-1.5 py-0.5 rounded bg-brand-green-50 text-brand-green-700">{{ "%.0f"|format(wr) }}%</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

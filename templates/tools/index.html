@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Tools - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="py-14 lg:py-20 relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10"></div>
+  <div class="hero-orb hero-orb-2 -z-10 opacity-60"></div>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
+    <span class="chip-premium mb-4 inline-flex">
+      <span class="live-dot"></span>
+      <span>Trader Toolkit</span>
+    </span>
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-black mt-2 leading-[1.05] reveal-3d">
+      Free <span class="gradient-shimmer">tools</span> for<br>smarter trading
+    </h1>
+    <p class="mt-5 text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed reveal-3d" style="animation-delay: 0.1s">
+      Calculate ROI, track performance, compare prop firms — everything you need to level up your edge.
+    </p>
+  </div>
+</section>
+
+<!-- TOOLS BENTO -->
+<section class="py-6 lg:py-10 relative">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 stagger-in">
+
+      <!-- ROI Calculator (large) -->
+      <a href="{{ url_for('tools.calculator') }}" class="tool-card group relative md:row-span-2">
+        <div class="relative h-full rounded-2xl p-6 lg:p-8 bg-gradient-to-br from-brand-green-900 via-brand-green-800 to-emerald-900 text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-brand-green-700/30">
+          <!-- Pattern bg -->
+          <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0); background-size: 20px 20px;"></div>
+          <div class="absolute -top-20 -right-20 w-64 h-64 bg-emerald-400/30 rounded-full blur-3xl"></div>
+
+          <div class="relative z-10 flex flex-col h-full">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              </div>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-400/20 border border-emerald-300/30 text-[10px] font-black uppercase tracking-wider text-emerald-200">Most Popular</span>
+            </div>
+            <h2 class="text-2xl lg:text-3xl font-black mt-1">ROI Calculator</h2>
+            <p class="text-emerald-100/80 mt-2 leading-relaxed text-sm lg:text-base flex-1">
+              Calculate expected return on a prop firm challenge. Input account size, profit target, split, and pass rate to see monthly & yearly projections with risk-adjusted scenarios.
+            </p>
+            <!-- Mock result -->
+            <div class="mt-4 p-3 rounded-xl bg-white/10 backdrop-blur border border-white/20">
+              <p class="text-[10px] uppercase tracking-widest text-emerald-200/80 font-black">Sample Result · $100K Account</p>
+              <p class="font-mono font-black text-2xl mt-0.5 text-emerald-300">+$4,500<span class="text-sm text-emerald-200/60">/month</span></p>
+            </div>
+            <div class="mt-5 inline-flex items-center gap-2 text-sm font-black">
+              <span>Try it now</span>
+              <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Performance Tracker -->
+      <a href="{{ url_for('tools.performance_tracker') }}" class="tool-card group relative">
+        <div class="relative h-full rounded-2xl p-6 bg-white border-2 border-brand-green-100 overflow-hidden transition-all duration-300 hover:border-brand-green-400 hover:shadow-xl hover:shadow-brand-green-700/10 hover:-translate-y-1">
+          <div class="absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br from-emerald-400/20 to-brand-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+
+          <div class="relative flex flex-col h-full">
+            <div class="icon-premium mb-4" style="width:3rem;height:3rem;border-radius:0.85rem;">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+            </div>
+            <h2 class="text-xl font-black text-brand-green-900">Performance Tracker</h2>
+            <p class="text-sm text-gray-600 mt-2 leading-relaxed flex-1">
+              Detailed stats from your journal — win rate, profit factor, streaks, by-firm breakdown, and full equity curve.
+            </p>
+            <div class="mt-4 flex items-center gap-2 text-sm font-black text-brand-green-700">
+              <span>View your stats</span>
+              <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Compare Firms (link out) -->
+      <a href="{{ url_for('firms.list_firms') }}" class="tool-card group relative">
+        <div class="relative h-full rounded-2xl p-6 bg-white border-2 border-brand-green-100 overflow-hidden transition-all duration-300 hover:border-brand-green-400 hover:shadow-xl hover:shadow-brand-green-700/10 hover:-translate-y-1">
+          <div class="absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br from-emerald-400/20 to-brand-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+
+          <div class="relative flex flex-col h-full">
+            <div class="icon-premium mb-4" style="width:3rem;height:3rem;border-radius:0.85rem;">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+            </div>
+            <h2 class="text-xl font-black text-brand-green-900">Compare 14 Prop Firms</h2>
+            <p class="text-sm text-gray-600 mt-2 leading-relaxed flex-1">
+              Side-by-side comparison of rules, fees, drawdowns, and verified discount codes.
+            </p>
+            <div class="mt-4 flex items-center gap-2 text-sm font-black text-brand-green-700">
+              <span>Browse directory</span>
+              <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM STATS -->
+<section class="py-10 relative">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="glass-card p-1 reveal-3d">
+      <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-brand-green-100/60">
+        <div class="p-5 text-center">
+          <p class="big-number text-3xl">{{ firms_count if firms_count else 14 }}</p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Firms Compared</p>
+        </div>
+        <div class="p-5 text-center">
+          <p class="big-number text-3xl">{{ plans_count if plans_count else 103 }}</p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Account Plans</p>
+        </div>
+        <div class="p-5 text-center">
+          <p class="big-number text-3xl">$4,000</p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Avg P&L</p>
+        </div>
+        <div class="p-5 text-center">
+          <p class="big-number text-3xl">2,500+</p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Trader Community</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMING SOON -->
+<section class="py-10 relative">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-6">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Coming Soon</p>
+      <h2 class="text-2xl font-black text-black mt-1">More tools on the way</h2>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {% set coming = [
+        ('🧮', 'Tax Calculator', 'Estimate taxes on your trading P&L'),
+        ('📊', 'Risk Calculator', 'Position sizing for any account'),
+        ('📉', 'Drawdown Tracker', 'Visualize your worst peak-to-trough'),
+        ('🚀', 'Compounding Calculator', 'See growth over years'),
+      ] %}
+      {% for icon, name, desc in coming %}
+      <div class="relative p-4 rounded-xl bg-gradient-to-br from-white to-brand-green-50/40 border-2 border-dashed border-brand-green-200 text-center group hover:border-brand-green-400 transition-colors">
+        <div class="text-3xl mb-2 opacity-70 group-hover:opacity-100 transition-opacity">{{ icon }}</div>
+        <p class="font-black text-sm text-brand-green-900">{{ name }}</p>
+        <p class="text-[11px] text-gray-500 mt-1 font-semibold">{{ desc }}</p>
+        <span class="absolute top-2 right-2 text-[9px] uppercase tracking-wider font-black text-brand-green-700 bg-brand-green-50 px-1.5 py-0.5 rounded">Soon</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

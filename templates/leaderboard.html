@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="py-12 lg:py-16 relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10"></div>
+  <div class="hero-orb hero-orb-2 -z-10 opacity-60"></div>
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div class="text-center mb-10">
+      <span class="chip-premium mb-4 inline-flex">
+        <span class="live-dot"></span>
+        <span>Top 50 Traders</span>
+      </span>
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-black leading-[1.05] reveal-3d">
+        Trader <span class="gradient-shimmer">Leaderboard</span>
+      </h1>
+      <p class="text-gray-600 mt-3 max-w-xl mx-auto reveal-3d" style="animation-delay: 0.1s">
+        Ranked by all-time P&L. Verified traders only.
+      </p>
+    </div>
+
+    {% if rows %}
+    <!-- Top 3 podium -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 stagger-in">
+      {% for row in rows[:3] %}
+      <div class="relative p-5 rounded-2xl bg-white border-2 border-brand-green-100 overflow-hidden text-center hover:shadow-xl transition-all hover:-translate-y-1 reveal-3d" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+        <div class="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-2xl opacity-40
+          {% if loop.index == 1 %}bg-yellow-300
+          {% elif loop.index == 2 %}bg-gray-300
+          {% else %}bg-orange-300{% endif %}"></div>
+        <div class="relative">
+          <div class="text-5xl mb-2">{{ row.medal }}</div>
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-2xl mx-auto mb-3 shadow-lg">
+            {{ row.user.username[0]|upper }}
+          </div>
+          <h3 class="font-black text-lg text-brand-green-900">@{{ row.user.username }}</h3>
+          <p class="font-mono font-black text-2xl mt-2 {% if row.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">
+            {% if row.pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(row.pnl) }}
+          </p>
+          <p class="text-xs text-gray-500 font-semibold mt-1">
+            <span class="font-mono">{{ row.trades }}</span> trades · <span class="font-mono">{{ "%.0f"|format(row.win_rate) }}%</span> WR
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Full table -->
+    <div class="glass-card p-1 reveal-3d" style="animation-delay: 0.4s">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-[10px] uppercase tracking-widest text-gray-500 font-black border-b border-brand-green-100">
+              <th class="p-3 text-left">Rank</th>
+              <th class="p-3 text-left">Trader</th>
+              <th class="p-3 text-right">P&L</th>
+              <th class="p-3 text-right">Trades</th>
+              <th class="p-3 text-right">Win Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr class="border-b border-brand-green-50 hover:bg-brand-green-50/40 transition-colors
+                {% if loop.index <= 3 %}bg-gradient-to-r from-brand-green-50/30 to-transparent{% endif %}">
+              <td class="p-3">
+                <div class="flex items-center gap-2">
+                  <span class="font-black text-lg
+                    {% if loop.index == 1 %}text-yellow-500
+                    {% elif loop.index == 2 %}text-gray-400
+                    {% elif loop.index == 3 %}text-orange-600
+                    {% else %}text-gray-500{% endif %}">
+                    {% if row.medal %}{{ row.medal }}{% else %}#{{ row.rank }}{% endif %}
+                  </span>
+                </div>
+              </td>
+              <td class="p-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-xs">
+                    {{ row.user.username[0]|upper }}
+                  </div>
+                  <span class="font-black text-brand-green-900">@{{ row.user.username }}</span>
+                </div>
+              </td>
+              <td class="p-3 text-right font-mono font-black {% if row.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">
+                {% if row.pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(row.pnl) }}
+              </td>
+              <td class="p-3 text-right font-mono font-bold text-gray-700">{{ row.trades }}</td>
+              <td class="p-3 text-right font-mono font-bold text-gray-700">{{ "%.0f"|format(row.win_rate) }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="holo-card relative rounded-3xl p-12 text-center">
+      <div class="holo-inner">
+        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center mx-auto mb-6 shadow-xl float">
+          <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        </div>
+        <h2 class="text-2xl font-black mb-2 text-brand-green-900">Leaderboard is empty</h2>
+        <p class="text-gray-600 mb-4">Be the first trader to log a trade and claim the #1 spot!</p>
+        <a href="{{ url_for('journal.new_entry') }}" class="btn-premium magnetic group inline-flex">
+          <span>+ Log First Trade</span>
+          <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

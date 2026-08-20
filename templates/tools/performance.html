@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Performance Tracker - {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="py-12 mesh-bg min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-brand-green-700">Tools</p>
+        <h1 class="text-3xl lg:text-4xl font-extrabold mt-1 text-black">
+          Performance <span class="text-holographic text-glow">Tracker</span>
+        </h1>
+      </div>
+      <a href="{{ url_for('journal.new_entry') }}" class="btn-3d px-4 py-2 bg-brand-green-800 text-white text-sm font-semibold rounded-lg">+ Log Trade</a>
+    </div>
+
+    {% if stats %}
+    <!-- Key stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 stagger-in">
+      <div class="holo-card relative rounded-2xl p-5 glow-border">
+        <div class="holo-inner">
+          <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Trades</p>
+          <p class="text-3xl font-extrabold mt-1 text-brand-green-900">{{ stats.total }}</p>
+        </div>
+      </div>
+      <div class="holo-card relative rounded-2xl p-5 glow-border">
+        <div class="holo-inner">
+          <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Win Rate</p>
+          <p class="text-3xl font-extrabold mt-1 {% if stats.win_rate >= 50 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">{{ "%.1f"|format(stats.win_rate) }}%</p>
+        </div>
+      </div>
+      <div class="holo-card relative rounded-2xl p-5 glow-border">
+        <div class="holo-inner">
+          <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Net P&L</p>
+          <p class="text-3xl font-extrabold font-mono mt-1 {% if stats.total_pnl >= 0 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">
+            {% if stats.total_pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(stats.total_pnl) }}
+          </p>
+        </div>
+      </div>
+      <div class="holo-card relative rounded-2xl p-5 glow-border">
+        <div class="holo-inner">
+          <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Profit Factor</p>
+          <p class="text-3xl font-extrabold font-mono mt-1 text-brand-green-900">{{ "%.2f"|format(stats.profit_factor) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equity Curve -->
+    {% if stats.equity_curve|length > 1 %}
+    <div class="holo-card relative rounded-2xl p-6 mb-6 glow-ambient">
+      <div class="holo-inner">
+        <h2 class="text-lg font-extrabold text-brand-green-900 mb-3">Equity Curve</h2>
+        <svg viewBox="0 0 {{ stats.equity_curve|length * 20 }} 200" class="w-full h-48" preserveAspectRatio="none">
+          {% set min_eq = stats.equity_curve|map(attribute='equity')|min %}
+          {% set max_eq = stats.equity_curve|map(attribute='equity')|max %}
+          {% set range_eq = (max_eq - min_eq) or 1 %}
+          <line x1="0" y1="100" x2="{{ stats.equity_curve|length * 20 }}" y2="100" stroke="#e5e7eb" stroke-dasharray="4"/>
+          <polyline fill="none" stroke="#145a36" stroke-width="2"
+            points="
+            {% for p in stats.equity_curve %}
+              {{ loop.index0 * 20 }},{{ 200 - ((p.equity - min_eq) / range_eq * 180 + 10) }}
+            {% endfor %}
+            "/>
+          <polyline fill="rgba(20,90,54,0.1)" stroke="none"
+            points="0,200
+            {% for p in stats.equity_curve %}{{ loop.index0 * 20 }},{{ 200 - ((p.equity - min_eq) / range_eq * 180 + 10) }}{% endfor %}
+            {{ stats.equity_curve|length * 20 }},200"/>
+        </svg>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- By Firm -->
+      {% if stats.by_firm %}
+      <div class="holo-card relative rounded-2xl p-6">
+        <div class="holo-inner">
+          <h2 class="text-lg font-extrabold text-brand-green-900 mb-3">By Prop Firm</h2>
+          <div class="space-y-2">
+            {% for firm, s in stats.by_firm.items() %}
+            <div class="flex items-center justify-between p-3 bg-white/70 backdrop-blur rounded-lg border border-brand-green-100">
+              <div>
+                <p class="font-semibold text-sm">{{ firm }}</p>
+                <p class="text-xs text-gray-500">{{ s.trades }} trades · {{ "%.0f"|format(s.wins/s.trades*100) }}% WR</p>
+              </div>
+              <p class="font-mono font-bold {% if s.pnl >= 0 %}text-brand-green-900{% else %}text-red-700{% endif %}">
+                {% if s.pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(s.pnl) }}
+              </p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Streaks -->
+      <div class="holo-card relative rounded-2xl p-6">
+        <div class="holo-inner">
+          <h2 class="text-lg font-extrabold text-brand-green-900 mb-3">Streaks</h2>
+          <div class="space-y-3">
+            <div class="p-4 bg-brand-green-50 rounded-lg border border-brand-green-200">
+              <p class="text-xs text-gray-600 uppercase font-bold">Longest Win Streak</p>
+              <p class="text-3xl font-extrabold text-brand-green-900 text-glow mt-1">{{ stats.longest_win }} 🔥</p>
+            </div>
+            <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+              <p class="text-xs text-gray-600 uppercase font-bold">Longest Loss Streak</p>
+              <p class="text-3xl font-extrabold text-red-700 mt-1">{{ stats.longest_loss }} ❄️</p>
+            </div>
+            <div class="p-4 bg-white/70 rounded-lg border border-brand-green-100">
+              <p class="text-xs text-gray-600 uppercase font-bold">Avg Win vs Avg Loss</p>
+              <div class="flex items-baseline gap-3 mt-1">
+                <span class="font-mono font-bold text-brand-green-700 text-glow">+${{ "{:,.0f}".format(stats.avg_win) }}</span>
+                <span class="text-gray-400">/</span>
+                <span class="font-mono font-bold text-red-600">-${{ "{:,.0f}".format(stats.avg_loss|abs) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% else %}
+    <div class="holo-card relative rounded-2xl p-12 text-center glow-ambient">
+      <div class="holo-inner">
+        <div class="w-16 h-16 rounded-2xl bg-brand-green-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        </div>
+        <h2 class="text-2xl font-extrabold text-brand-green-900 mb-2">No trades yet</h2>
+        <p class="text-gray-600 mb-6">Log your first trade to start tracking your performance.</p>
+        <a href="{{ url_for('journal.new_entry') }}" class="btn-3d inline-block px-6 py-3 bg-brand-green-800 text-white font-semibold rounded-lg">+ Log First Trade</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

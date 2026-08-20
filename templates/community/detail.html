@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="hero-orb hero-orb-1 -z-10"></div>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-6 relative">
+    <a href="{{ url_for('community.list_posts') }}" class="inline-flex items-center gap-1.5 text-sm text-brand-green-800 hover:text-brand-green-900 font-bold mb-4">
+      <span>←</span> All posts
+    </a>
+
+    <!-- Post card -->
+    <div class="glass-card p-6 lg:p-8 reveal-3d">
+      <div class="flex flex-wrap items-center gap-2 text-xs mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-xs">
+            {{ post.user.username[0]|upper }}
+          </div>
+          <span class="font-black text-brand-green-900">@{{ post.user.username }}</span>
+        </div>
+        <span class="text-gray-300">·</span>
+        <span class="text-gray-500 font-semibold">{{ post.created_at.strftime('%b %d, %Y · %H:%M UTC') }}</span>
+        <span class="inline-block px-2 py-0.5 rounded-full bg-brand-green-50 text-brand-green-800 text-[10px] font-black uppercase tracking-wider">
+          {{ post.category }}
+        </span>
+      </div>
+
+      <h1 class="text-3xl lg:text-4xl font-black text-black leading-[1.1] tracking-tight">{{ post.title }}</h1>
+
+      <div class="prose prose-lg max-w-none mt-5 text-gray-800 leading-relaxed whitespace-pre-wrap">
+        {{ post.body }}
+      </div>
+
+      <div class="mt-6 pt-5 border-t border-brand-green-100 flex items-center gap-3 flex-wrap">
+        {% if current_user.is_authenticated %}
+        <form method="POST" action="{{ url_for('community.upvote', post_id=post.id) }}" class="inline">
+          <button type="submit" class="upvote-btn group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border-2 text-sm font-black transition-all
+            {% if user_voted %}bg-brand-green-700 text-white border-brand-green-700 shadow-md shadow-brand-green-700/30
+            {% else %}border-brand-green-300 text-brand-green-800 hover:bg-brand-green-50 hover:border-brand-green-500{% endif %}">
+            <svg class="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+            <span class="font-mono">{{ post.upvotes }}</span>
+            <span class="hidden sm:inline">Upvotes</span>
+          </button>
+        </form>
+        <span class="text-sm text-gray-500 font-semibold flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          <span class="font-mono">{{ comments|length }}</span> comments
+        </span>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border-2 border-brand-green-300 text-sm font-bold text-brand-green-800 hover:bg-brand-green-50 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+          <span class="font-mono">{{ post.upvotes }}</span>
+          <span>Sign in to upvote</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMENTS -->
+<section class="pb-12 relative">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="glass-card p-6 lg:p-8 reveal-3d" style="animation-delay: 0.1s">
+      <div class="flex items-center gap-2 mb-5">
+        <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Discussion</p>
+        <span class="px-2 py-0.5 rounded-full bg-brand-green-100 text-brand-green-800 text-xs font-black">{{ comments|length }}</span>
+        <div class="flex-1 h-px bg-gradient-to-r from-brand-green-200 to-transparent"></div>
+      </div>
+
+      <!-- Comment form -->
+      {% if current_user.is_authenticated %}
+      <form method="POST" action="{{ url_for('community.add_comment', post_id=post.id) }}" class="mb-6">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+            {{ current_user.username[0]|upper }}
+          </div>
+          <div class="flex-1">
+            <textarea name="body" rows="3" required placeholder="Add your thoughts..." class="w-full px-4 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none transition font-semibold resize-none"></textarea>
+            <div class="flex items-center justify-between mt-2">
+              <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Be respectful. No spam.</p>
+              <button type="submit" class="btn-premium magnetic group text-sm py-2 px-4">
+                <span>Post Comment</span>
+                <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+      {% else %}
+      <div class="mb-6 p-4 rounded-xl bg-gradient-to-r from-brand-green-50 to-emerald-50 border border-brand-green-200 text-center">
+        <p class="text-sm text-gray-700">
+          <a href="{{ url_for('auth.login') }}" class="font-black text-brand-green-800 hover:text-brand-green-900">Sign in</a>
+          to join the discussion.
+        </p>
+      </div>
+      {% endif %}
+
+      {% if comments %}
+      <div class="space-y-3">
+        {% for c in comments %}
+        <div class="comment-card group flex items-start gap-3 p-3 rounded-xl bg-white border border-brand-green-100 hover:border-brand-green-300 transition-colors">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+            {{ c.user.username[0]|upper }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 text-xs mb-1">
+              <span class="font-black text-brand-green-900">@{{ c.user.username }}</span>
+              <span class="text-gray-300">·</span>
+              <span class="text-gray-500 font-semibold">{{ c.created_at.strftime('%b %d · %H:%M UTC') }}</span>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{{ c.body }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-8">
+        <div class="w-12 h-12 rounded-xl bg-brand-green-50 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-brand-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        </div>
+        <p class="text-sm text-gray-500 font-semibold">No comments yet. Be the first to share your thoughts.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

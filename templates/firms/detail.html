@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+{% block title %}{{ firm.name }} - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO HEADER -->
+<section class="relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10"></div>
+  <div class="hero-orb hero-orb-2 -z-10"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-8 lg:pt-16 lg:pb-12">
+    <!-- Breadcrumb -->
+    <nav class="text-xs text-gray-500 mb-4 flex items-center gap-2 font-semibold">
+      <a href="{{ url_for('firms.list_firms') }}" class="hover:text-brand-green-700 transition-colors">Prop Firms</a>
+      <span>›</span>
+      <span class="text-brand-green-900">{{ firm.name }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <!-- Left: Firm identity + description -->
+      <div class="lg:col-span-8">
+        <div class="flex flex-wrap items-start gap-5 mb-6">
+          <div class="firm-logo relative w-20 h-20 lg:w-24 lg:h-24 rounded-2xl bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-3xl lg:text-4xl flex-shrink-0 shadow-xl shadow-brand-green-700/30 float">
+            <span class="relative z-10">
+              {% set words = firm.name.split() %}
+              {% if words|length >= 2 %}{{ words[0][0]|upper }}{{ words[1][0]|upper }}{% else %}{{ firm.name[:2]|upper }}{% endif %}
+            </span>
+            <span class="absolute inset-0 rounded-2xl bg-gradient-to-tr from-emerald-400/0 via-emerald-400/30 to-emerald-400/0"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <span class="chip-premium mb-3 inline-flex">
+              <span class="live-dot"></span>
+              <span class="capitalize">{{ firm.category }}</span>
+            </span>
+            <h1 class="text-4xl lg:text-5xl font-black tracking-tight text-black leading-[1.05]">{{ firm.name }}</h1>
+            <div class="flex flex-wrap items-center gap-3 mt-3 text-sm">
+              <div class="flex items-center gap-1.5 bg-yellow-50 border border-yellow-200 px-2.5 py-1 rounded-md">
+                <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                <span class="font-black text-yellow-700">{{ "%.1f"|format(firm.rating) }}</span>
+                <span class="text-yellow-600 text-xs font-semibold">({{ reviews|length }} review{{ '' if reviews|length == 1 else 's' }})</span>
+              </div>
+              {% if firm.website %}
+                <a href="{{ firm.website }}" target="_blank" rel="noopener" class="text-brand-green-700 hover:text-brand-green-900 font-bold flex items-center gap-1 transition-colors">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  Visit site
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if firm.description %}
+        <p class="text-base lg:text-lg text-gray-700 leading-relaxed max-w-3xl">{{ firm.description }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Right: Discount CTA (sticky) -->
+      <div class="lg:col-span-4 lg:sticky lg:top-24">
+        <div class="relative">
+          <div class="absolute -inset-3 bg-gradient-to-br from-emerald-400/30 to-brand-green-500/30 blur-2xl rounded-2xl -z-10"></div>
+          <div class="glass-card-dark p-6 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+            <p class="text-[10px] uppercase tracking-[0.2em] text-emerald-300 font-bold text-center">Exclusive DR Liquidity Discount</p>
+            <div class="mt-3 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[10px] uppercase tracking-widest text-emerald-300/70 font-bold">Use code at checkout</p>
+                <p class="font-mono font-black text-2xl text-white mt-1 tracking-wider" id="code-text">{{ firm.discount_code }}</p>
+              </div>
+              <div class="text-right">
+                <p class="font-black text-4xl text-emerald-300 leading-none">{{ firm.discount_percent }}%</p>
+                <p class="text-[10px] uppercase tracking-widest text-emerald-200/80 font-bold mt-1">Discount</p>
+              </div>
+            </div>
+            <button type="button" onclick="navigator.clipboard.writeText('{{ firm.discount_code }}'); this.textContent='Copied ✓'; setTimeout(()=>this.textContent='Copy Code', 1800)" class="mt-4 w-full py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold rounded-lg transition-colors">
+              Copy Code
+            </button>
+            {% if firm.affiliate_url %}
+            <a href="{{ firm.affiliate_url }}" target="_blank" rel="noopener" class="mt-2 btn-premium w-full justify-center magnetic group">
+              <span>Get Deal</span>
+              <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+            </a>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('purchases.new_purchase', firm_id=firm.id) }}" class="mt-2 w-full block text-center py-2.5 bg-emerald-400 hover:bg-emerald-300 text-brand-green-900 text-sm font-black rounded-lg transition-colors">
+              I bought this — Verify & Get Cashback
+            </a>
+            {% else %}
+            <a href="{{ url_for('auth.signup') }}" class="mt-2 w-full block text-center py-2.5 bg-emerald-400 hover:bg-emerald-300 text-brand-green-900 text-sm font-black rounded-lg transition-colors">
+              Sign up to verify & earn cashback
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUICK STATS BANNER -->
+<section class="py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="glass-card p-1">
+      <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-brand-green-100/60">
+        <div class="p-4 lg:p-5 text-center">
+          <p class="big-number text-2xl lg:text-3xl">{{ plans|length }}</p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Account Plans</p>
+        </div>
+        <div class="p-4 lg:p-5 text-center">
+          <p class="big-number text-2xl lg:text-3xl">
+            {% if plans %}${{ (plans|map(attribute='account_size')|max / 1000)|round(0)|int }}K{% else %}—{% endif %}
+          </p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Largest Account</p>
+        </div>
+        <div class="p-4 lg:p-5 text-center">
+          <p class="big-number text-2xl lg:text-3xl">
+            {% if plans %}{{ plans|map(attribute='profit_split')|max }}%{% else %}—{% endif %}
+          </p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Top Profit Split</p>
+        </div>
+        <div class="p-4 lg:p-5 text-center">
+          <p class="big-number text-2xl lg:text-3xl">{{ reviews|length }}</p>
+          <p class="text-[10px] uppercase tracking-[0.18em] text-gray-500 font-bold mt-2">Trader Reviews</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ACCOUNT PLANS -->
+<section class="py-10 lg:py-14 relative">
+  <div class="absolute inset-0 bg-gradient-to-b from-white to-brand-green-50/20 -z-10"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-end justify-between mb-8 reveal-3d">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-green-700">Account Options</p>
+        <h2 class="text-3xl lg:text-4xl font-black mt-1 text-black">Account <span class="gradient-shimmer">Plans</span></h2>
+      </div>
+      <span class="text-sm text-gray-500 font-semibold hidden sm:block">{{ plans|length }} plan{{ '' if plans|length == 1 else 's' }} available</span>
+    </div>
+
+    {% if plans %}
+    {% set max_account = plans|map(attribute='account_size')|max %}
+    {% set ns = namespace(top_seen=false) %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 stagger-in">
+      {% for p in plans %}
+      {% set is_top = (p.account_size == max_account and not ns.top_seen) %}
+      {% if is_top %}{% set ns.top_seen = true %}{% endif %}
+      <div class="plan-card group relative">
+        <div class="relative h-full rounded-2xl p-5 bg-white border-2 border-brand-green-100 transition-all duration-300 overflow-hidden hover:border-brand-green-400 hover:shadow-xl hover:shadow-brand-green-700/10 hover:-translate-y-1 {% if is_top %}border-brand-green-400 ring-1 ring-brand-green-300/40{% endif %}">
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-brand-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div>
+              <p class="text-[10px] uppercase tracking-widest text-brand-green-700 font-bold">{{ p.account_type or 'Challenge' }}</p>
+              <h3 class="font-black text-lg text-brand-green-900 mt-0.5 leading-tight">{{ p.name }}</h3>
+            </div>
+            {% if is_top %}
+            <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-black uppercase tracking-wider whitespace-nowrap">⭐ Most Popular</span>
+            {% endif %}
+          </div>
+
+          <!-- Account size big -->
+          <div class="mb-4 pb-4 border-b border-brand-green-100">
+            <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Account Size</p>
+            <p class="font-mono font-black text-3xl text-brand-green-900 mt-0.5">
+              ${{ "{:,}".format(p.account_size) }}
+            </p>
+          </div>
+
+          <!-- Specs grid -->
+          <div class="space-y-2.5 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 font-semibold">Challenge Fee</span>
+              <span class="font-mono font-black text-brand-green-900">${{ "{:,.0f}".format(p.challenge_fee) }}</span>
+            </div>
+            {% if p.activation_fee %}
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 font-semibold">Activation</span>
+              <span class="font-mono font-black text-gray-700">${{ "{:,.0f}".format(p.activation_fee) }}</span>
+            </div>
+            {% endif %}
+            {% if p.profit_target %}
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 font-semibold">Profit Target</span>
+              <span class="font-mono font-black text-emerald-700">${{ "{:,.0f}".format(p.profit_target) }}</span>
+            </div>
+            {% endif %}
+            {% if p.drawdown_amount %}
+            <div class="flex items-center justify-between">
+              <span class="text-gray-500 font-semibold">Drawdown</span>
+              <span class="font-mono font-black text-red-700">${{ "{:,.0f}".format(p.drawdown_amount) }} <span class="text-[10px] text-gray-500 font-semibold">{{ p.drawdown_type or 'EOD' }}</span></span>
+            </div>
+            {% endif %}
+            <div class="flex items-center justify-between pt-2 border-t border-brand-green-100/50">
+              <span class="text-gray-500 font-semibold">Profit Split</span>
+              <span class="font-mono font-black text-brand-green-700 text-base">{{ p.profit_split }}%</span>
+            </div>
+          </div>
+
+          {% if firm.affiliate_url %}
+          <a href="{{ firm.affiliate_url }}" target="_blank" rel="noopener" class="mt-4 w-full block text-center py-2.5 bg-brand-green-800 hover:bg-brand-green-900 text-white text-sm font-black rounded-lg transition-colors">
+            Get this plan →
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white border-2 border-dashed border-brand-green-200 rounded-2xl p-12 text-center">
+      <p class="text-gray-500">No plans listed yet for this firm.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="py-10 lg:py-14 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-end justify-between mb-8 reveal-3d">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand-green-700">Community Feedback</p>
+        <h2 class="text-3xl lg:text-4xl font-black mt-1 text-black">Trader <span class="gradient-shimmer">Reviews</span></h2>
+      </div>
+      {% if reviews %}
+      <span class="text-sm text-gray-500 font-semibold hidden sm:block">Showing {{ reviews|length }} of {{ reviews|length }}</span>
+      {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Reviews list (2 cols) -->
+      <div class="lg:col-span-2 space-y-4">
+        {% if reviews %}
+          <!-- Rating summary card -->
+          <div class="glass-card p-5 mb-4 reveal-3d">
+            <div class="flex flex-wrap items-center gap-6">
+              <div class="text-center">
+                <p class="font-mono font-black text-5xl text-brand-green-900 leading-none">{{ "%.1f"|format(firm.rating) }}</p>
+                <div class="flex items-center justify-center gap-0.5 mt-1">
+                  {% set full = firm.rating|round(0, 'floor')|int %}
+                  {% for i in range(5) %}
+                    {% if i < full %}
+                      <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    {% else %}
+                      <svg class="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+                <p class="text-xs text-gray-500 font-semibold mt-1">{{ reviews|length }} review{{ '' if reviews|length == 1 else 's' }}</p>
+              </div>
+              <div class="flex-1 min-w-[200px]">
+                {% set counts = [] %}
+                {% for i in range(5, 0, -1) %}
+                  {% set _ = counts.append(i) %}
+                {% endfor %}
+                {% for star in [5, 4, 3, 2, 1] %}
+                {% set cnt = reviews|selectattr('rating', 'eq', star)|list|length %}
+                {% set pct = ((cnt / reviews|length * 100) if reviews|length else 0)|round(0, 'floor')|int %}
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="font-bold text-gray-700 w-6">{{ star }}★</span>
+                  <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full" style="width: {{ pct }}%"></div>
+                  </div>
+                  <span class="text-gray-500 font-semibold w-8 text-right">{{ cnt }}</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Individual reviews -->
+          {% for r in reviews %}
+          <div class="bg-white border-2 border-brand-green-100 rounded-2xl p-5 hover:border-brand-green-300 transition-colors">
+            <div class="flex items-start gap-3 mb-2">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-sm flex-shrink-0">
+                {{ r.user.username[0]|upper }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center flex-wrap gap-2">
+                  <span class="font-bold text-brand-green-900">@{{ r.user.username }}</span>
+                  {% if r.is_verified_purchase %}
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    Verified Buyer
+                  </span>
+                  {% endif %}
+                </div>
+                <div class="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                  <div class="flex items-center gap-0.5">
+                    {% for i in range(r.rating) %}
+                      <svg class="w-3 h-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    {% endfor %}
+                  </div>
+                  <span>·</span>
+                  <span>{{ r.created_at.strftime('%b %d, %Y') }}</span>
+                </div>
+              </div>
+            </div>
+            {% if r.title %}<h4 class="font-bold text-brand-green-900 mt-2">{{ r.title }}</h4>{% endif %}
+            <p class="text-sm text-gray-700 leading-relaxed mt-1.5">{{ r.body }}</p>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="bg-white border-2 border-dashed border-brand-green-200 rounded-2xl p-12 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-brand-green-50 flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-brand-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-brand-green-900 mb-1">No reviews yet</h3>
+            <p class="text-sm text-gray-500">Be the first to share your experience with this firm.</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Write review form (1 col, sticky) -->
+      <div class="lg:sticky lg:top-24 h-fit">
+        <div class="bg-gradient-to-br from-white to-brand-green-50/30 border-2 border-brand-green-200 rounded-2xl p-6 shadow-lg">
+          <h3 class="text-lg font-black mb-1 text-brand-green-900">
+            {% if user_review %}Update Your Review{% else %}Write a Review{% endif %}
+          </h3>
+          <p class="text-xs text-gray-500 font-semibold mb-4">Help other traders make informed decisions.</p>
+
+          {% if current_user.is_authenticated %}
+          <form method="POST" action="{{ url_for('firms.add_review', slug=firm.slug) }}" class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold mb-1.5 text-brand-green-900">Rating</label>
+              <select name="rating" required class="w-full px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none font-semibold">
+                {% for i in range(1, 6) %}
+                  <option value="{{ i }}" {% if user_review and user_review.rating == i %}selected{% endif %}>{{ i }} star{{ '' if i == 1 else 's' }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1.5 text-brand-green-900">Title</label>
+              <input type="text" name="title" value="{{ user_review.title if user_review else '' }}" placeholder="Sum up your experience" class="w-full px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1.5 text-brand-green-900">Review</label>
+              <textarea name="body" required rows="5" placeholder="What did you like? What could be better?" class="w-full px-3 py-2.5 bg-white border-2 border-gray-200 rounded-lg text-sm focus:border-brand-green-700 focus:outline-none font-semibold resize-none">{{ user_review.body if user_review else '' }}</textarea>
+            </div>
+            <button type="submit" class="w-full btn-premium magnetic group justify-center">
+              <span>{% if user_review %}Update Review{% else %}Post Review{% endif %}</span>
+              <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+            </button>
+            {% if user_review %}
+            <p class="text-xs text-emerald-700 font-bold text-center flex items-center justify-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              Verified buyer badge auto-applied
+            </p>
+            {% endif %}
+          </form>
+          {% else %}
+          <div class="text-center py-4">
+            <p class="text-sm text-gray-600 mb-4">Sign in to share your experience with this prop firm.</p>
+            <a href="{{ url_for('auth.login', next=request.full_path) }}" class="btn-premium w-full justify-center magnetic group">
+              <span>Sign In to Review</span>
+              <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+            </a>
+            <a href="{{ url_for('auth.signup') }}" class="block mt-3 text-xs text-brand-green-700 hover:text-brand-green-900 font-bold">Or create a free account →</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

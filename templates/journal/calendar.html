@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Calendar - {{ site_name }} Journal{% endblock %}
+
+{% block content %}
+<section class="py-10 mesh-bg min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-brand-green-700">Journal</p>
+        <h1 class="text-3xl lg:text-4xl font-extrabold mt-1">Trade Calendar</h1>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('journal.monthly_view') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Monthly</a>
+        <a href="{{ url_for('journal.weekly_view') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Weekly</a>
+        <a href="{{ url_for('journal.list_entries') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">List</a>
+        <a href="{{ url_for('journal.analytics') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Analytics</a>
+        <a href="{{ url_for('journal.new_entry') }}" class="btn-3d px-4 py-2 bg-brand-green-800 text-white text-sm font-semibold rounded-lg">+ New Trade</a>
+      </div>
+    </div>
+
+    <!-- Month nav + stats -->
+    <div class="holo-card relative rounded-2xl p-6 mb-6 glow-ambient">
+      <div class="holo-inner">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+          <div class="flex items-center gap-2">
+            <a href="{{ url_for('journal.calendar_view', year=prev_year, month=prev_month) }}" class="p-2 rounded-lg bg-white/70 border border-brand-green-200 hover:bg-brand-green-50 hover:border-brand-green-400 transition">
+              <svg class="w-5 h-5 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+            <h2 class="text-2xl lg:text-3xl font-extrabold text-brand-green-900 min-w-[200px] text-center">
+              {{ month_name }} {{ year }}
+            </h2>
+            <a href="{{ url_for('journal.calendar_view', year=next_year, month=next_month) }}" class="p-2 rounded-lg bg-white/70 border border-brand-green-200 hover:bg-brand-green-50 hover:border-brand-green-400 transition">
+              <svg class="w-5 h-5 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+          <a href="{{ url_for('journal.calendar_view') }}" class="text-sm font-semibold text-brand-green-700 hover:text-brand-green-900">Jump to today</a>
+        </div>
+
+        <!-- Stats row -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Total Trades</p>
+            <p class="text-2xl font-extrabold text-brand-green-900 mt-0.5">{{ total_trades }}</p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Trading Days</p>
+            <p class="text-2xl font-extrabold text-brand-green-900 mt-0.5">{{ trading_days }}</p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Win Rate</p>
+            <p class="text-2xl font-extrabold mt-0.5 {% if win_rate >= 50 %}text-brand-green-700 text-glow{% else %}text-red-600{% endif %}">{{ "%.0f"|format(win_rate) }}%</p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Wins / Losses</p>
+            <p class="text-2xl font-extrabold mt-0.5">
+              <span class="text-brand-green-700">{{ winners }}</span>
+              <span class="text-gray-300">/</span>
+              <span class="text-red-600">{{ losers }}</span>
+            </p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg col-span-2 md:col-span-1">
+            <p class="text-xs text-gray-500 uppercase font-bold">Net P&L</p>
+            <p class="text-2xl font-extrabold font-mono mt-0.5 {% if total_pnl >= 0 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">
+              {% if total_pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(total_pnl) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar grid (clean style matching the reference image) -->
+    <div class="bg-white rounded-2xl border-2 border-black overflow-hidden shadow-2xl">
+      <!-- Weekday header bar (black) -->
+      <div class="grid grid-cols-7 bg-black">
+        {% for dow in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %}
+        <div class="text-center text-white text-sm font-bold py-3 border-r border-gray-700 last:border-r-0">{{ dow }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Days grid -->
+      <div class="grid grid-cols-7">
+        {% for d in days %}
+          {% if d.day is none %}
+          <div class="min-h-[110px] bg-white border-r border-b border-black last:border-r-0"></div>
+          {% else %}
+          <div class="group relative min-h-[110px] bg-white border-r border-b border-black last:border-r-0 p-2 transition
+              {% if d.is_today %}bg-emerald-accent-50 ring-2 ring-emerald-accent-500 ring-inset{% endif %}
+              {% if d.pnl > 0 %}hover:bg-brand-green-50/40{% elif d.pnl < 0 %}hover:bg-red-50/40{% else %}hover:bg-gray-50{% endif %}"
+            title="{{ d.date.strftime('%B %d, %Y') }} — {% if d.count %}{{ d.count }} trade(s), ${{ '{:,.0f}'.format(d.pnl) }}{% else %}No trades{% endif %}">
+
+            <!-- Date number (top-left, like reference) -->
+            <div class="flex items-start justify-between">
+              <span class="text-lg font-bold {% if d.is_today %}text-emerald-accent-600{% else %}text-black{% endif %}">{{ d.day }}</span>
+              {% if d.is_today %}
+              <span class="text-[8px] uppercase font-bold tracking-wider bg-emerald-accent-500 text-white px-1.5 py-0.5 rounded">Today</span>
+              {% endif %}
+            </div>
+
+            <!-- Trade summary (if any) -->
+            {% if d.count > 0 %}
+            <div class="mt-1">
+              <p class="font-mono font-bold text-sm leading-tight {% if d.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">
+                {% if d.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(d.pnl) }}
+              </p>
+              <p class="text-[10px] text-gray-500 leading-tight">{{ d.count }} trade{{ '' if d.count == 1 else 's' }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Hover popup with trade details -->
+            {% if d.entries %}
+            <div class="absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 bg-white border-2 border-brand-green-300 rounded-xl shadow-2xl p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 text-left text-gray-800">
+              <p class="font-bold text-brand-green-900 mb-1">{{ d.date.strftime('%A, %B %d') }}</p>
+              <p class="text-xs text-gray-500 mb-2">{{ d.count }} trade{{ '' if d.count == 1 else 's' }} · <span class="{% if d.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %} font-bold">${{ '{:,.0f}'.format(d.pnl) }}</span></p>
+              <div class="space-y-1 max-h-40 overflow-y-auto">
+                {% for e in d.entries %}
+                <div class="text-xs flex items-center justify-between p-1 bg-brand-green-50/50 rounded">
+                  <span><span class="font-mono font-bold">{{ e.symbol }}</span> <span class="px-1 rounded {% if e.direction == 'LONG' %}bg-brand-green-200 text-brand-green-800{% else %}bg-red-200 text-red-700{% endif %} text-[10px]">{{ e.direction }}</span> {{ e.contracts }}x</span>
+                  <span class="font-mono font-bold {% if e.pnl >= 0 %}text-brand-green-700{% else %}text-red-600{% endif %}">{% if e.pnl >= 0 %}+{% endif %}${{ '{:,.0f}'.format(e.pnl) }}</span>
+                </div>
+                {% endfor %}
+              </div>
+              <a href="{{ url_for('journal.new_entry') }}?date={{ d.date.isoformat() }}" class="block mt-2 text-center text-xs text-brand-green-700 hover:text-brand-green-900 font-bold">+ Add trade for this day</a>
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-600">
+      <div class="flex items-center gap-1.5"><div class="w-3 h-3 rounded ring-2 ring-emerald-accent-500"></div><span>Today</span></div>
+      <span class="text-gray-300">|</span>
+      <span>Hover any day for trade details</span>
+    </div>
+  </div>
+</section>
+{% endblock %}

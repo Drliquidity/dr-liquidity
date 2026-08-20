@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}404 Not Found - {{ site_name }}{% endblock %}
+
+{% block content %}
+<section class="min-h-[calc(100vh-4rem)] flex items-center justify-center relative overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10"></div>
+  <div class="hero-orb hero-orb-2 -z-10 opacity-60"></div>
+
+  <div class="max-w-2xl mx-auto text-center px-4 py-20 relative">
+    <!-- Floating 404 -->
+    <div class="relative inline-block mb-6">
+      <div class="font-mono font-black text-[10rem] sm:text-[14rem] leading-none gradient-shimmer select-none">404</div>
+      <div class="absolute -top-4 -right-4 px-3 py-1.5 rounded-full bg-white border-2 border-brand-green-700 shadow-lg shadow-brand-green-700/30 float-delayed flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+        <span class="text-[10px] font-black uppercase tracking-wider text-brand-green-900">Page Not Found</span>
+      </div>
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl font-black text-black leading-tight">
+      Lost in the <span class="gradient-shimmer">charts</span>
+    </h1>
+    <p class="text-gray-600 mt-3 max-w-md mx-auto leading-relaxed">
+      The page you're looking for doesn't exist or has been moved. Let's get you back to trading.
+    </p>
+
+    <div class="mt-8 flex flex-wrap gap-3 justify-center">
+      <a href="{{ url_for('index') }}" class="btn-premium magnetic group">
+        <span>← Back to Home</span>
+        <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+      </a>
+      <a href="{{ url_for('journal.list_entries') }}" class="btn-premium-outline magnetic group">
+        <span>My Journal</span>
+      </a>
+      <a href="{{ url_for('firms.list_firms') }}" class="btn-premium-outline magnetic group">
+        <span>Browse Firms</span>
+      </a>
+    </div>
+
+    <!-- Quick links -->
+    <div class="mt-10 pt-8 border-t border-brand-green-100">
+      <p class="text-[10px] uppercase tracking-widest text-gray-500 font-black mb-3">Or try these</p>
+      <div class="flex flex-wrap gap-2 justify-center">
+        <a href="{{ url_for('tools.index') }}" class="px-3 py-1.5 rounded-full bg-white border border-brand-green-200 text-brand-green-800 text-xs font-bold hover:bg-brand-green-50 transition-colors">Tools</a>
+        <a href="{{ url_for('community.list_posts') }}" class="px-3 py-1.5 rounded-full bg-white border border-brand-green-200 text-brand-green-800 text-xs font-bold hover:bg-brand-green-50 transition-colors">Community</a>
+        <a href="{{ url_for('education.list_articles') }}" class="px-3 py-1.5 rounded-full bg-white border border-brand-green-200 text-brand-green-800 text-xs font-bold hover:bg-brand-green-50 transition-colors">Education</a>
+        <a href="{{ url_for('purchases.list_purchases') }}" class="px-3 py-1.5 rounded-full bg-white border border-brand-green-200 text-brand-green-800 text-xs font-bold hover:bg-brand-green-50 transition-colors">Purchases</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

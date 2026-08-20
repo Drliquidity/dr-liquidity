@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}About - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-brand-green-900 via-brand-green-800 to-emerald-900 -z-10"></div>
+  <div class="absolute inset-0 -z-10" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 24px 24px;"></div>
+  <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl -z-10"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-brand-green-400/20 rounded-full blur-3xl -z-10"></div>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 text-center relative">
+    <span class="chip-premium mb-4 inline-flex">
+      <span class="live-dot"></span>
+      <span>About Us</span>
+    </span>
+    <h1 class="text-5xl lg:text-6xl font-black text-white leading-[1.05] tracking-tight">
+      Why <span class="gradient-shimmer">DR Liquidity</span>?
+    </h1>
+    <p class="text-emerald-100/80 mt-4 text-lg max-w-2xl mx-auto leading-relaxed">
+      A hub for prop firm traders. Built by traders, for traders.
+    </p>
+  </div>
+</section>
+
+<!-- CONTENT -->
+<section class="py-10 lg:py-14 relative">
+  <div class="absolute inset-0 bg-gradient-to-b from-white to-brand-green-50/20 -z-10"></div>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <div class="glass-card p-6 lg:p-8 mb-6 reveal-3d">
+      <p class="text-lg text-gray-700 leading-relaxed">
+        DR Liquidity is a hub for prop firm traders. We built it because the trading space is full of hype, scams, and shallow content. We wanted something different.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <div class="glass-card p-6 reveal-3d" style="animation-delay: 0.1s">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-green-700 text-white flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h3 class="text-lg font-black text-brand-green-900">What we are</h3>
+        </div>
+        <p class="text-sm text-gray-700 leading-relaxed">
+          A transparent platform with the tools serious traders need — a real trade journal, prop firm comparisons with verified discount codes, education that doesn't waste your time, and a community that doesn't spam signals.
+        </p>
+      </div>
+
+      <div class="glass-card p-6 reveal-3d" style="animation-delay: 0.15s">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </div>
+          <h3 class="text-lg font-black text-brand-green-900">What we are NOT</h3>
+        </div>
+        <p class="text-sm text-gray-700 leading-relaxed">
+          A signal service, a "guru" selling dreams, or a platform that hides fees. We make money when you save money on prop firm challenges (affiliate commissions). That's it. No funny business.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+      <div class="glass-card p-6 reveal-3d" style="animation-delay: 0.2s">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="icon-premium" style="width:2.25rem;height:2.25rem;border-radius:0.5rem;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <h3 class="text-lg font-black text-brand-green-900">The Journal</h3>
+        </div>
+        <p class="text-sm text-gray-700 leading-relaxed">
+          Is yours, forever. Track every trade, see your equity curve, find what setups work, kill what doesn't.
+        </p>
+      </div>
+
+      <div class="glass-card p-6 reveal-3d" style="animation-delay: 0.25s">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="icon-premium" style="width:2.25rem;height:2.25rem;border-radius:0.5rem;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+          </div>
+          <h3 class="text-lg font-black text-brand-green-900">The Community</h3>
+        </div>
+        <p class="text-sm text-gray-700 leading-relaxed">
+          Is for sharing real trades, real lessons, and getting feedback. Verified buyers get a badge so you know who's actually traded with the firm they're reviewing.
+        </p>
+      </div>
+    </div>
+
+    <div class="text-center py-8 reveal-3d" style="animation-delay: 0.3s">
+      <p class="text-2xl lg:text-3xl font-black text-brand-green-900 leading-tight">
+        <span class="gradient-shimmer">Discipline</span> over dopamine.<br>
+        <span class="gradient-shimmer">Process</span> over payout.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}

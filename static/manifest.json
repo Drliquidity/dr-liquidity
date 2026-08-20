@@ -1,0 +1,51 @@
+{
+  "name": "DR Liquidity - Trader Hub",
+  "short_name": "DR Liquidity",
+  "description": "Track every trade, compare prop firms, pass every eval.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a3520",
+  "theme_color": "#145a36",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Log Trade",
+      "short_name": "Log",
+      "url": "/journal/new",
+      "icons": [{"src": "/static/pwa/icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Journal",
+      "short_name": "Journal",
+      "url": "/journal",
+      "icons": [{"src": "/static/pwa/icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Prop Firms",
+      "short_name": "Firms",
+      "url": "/firms",
+      "icons": [{"src": "/static/pwa/icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "icons": [{"src": "/static/pwa/icon-192.png", "sizes": "192x192"}]
+    }
+  ]
+}

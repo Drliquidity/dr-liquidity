@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Community - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="py-10 lg:py-14 relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10"></div>
+  <div class="hero-orb hero-orb-2 -z-10 opacity-60"></div>
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-6 reveal-3d">
+      <div>
+        <span class="chip-premium mb-3 inline-flex">
+          <span class="live-dot"></span>
+          <span>Community · {{ posts|length }} Active Posts</span>
+        </span>
+        <h1 class="text-4xl lg:text-5xl font-black tracking-tight text-black mt-1">
+          Trader <span class="gradient-shimmer">Discussions</span>
+        </h1>
+        <p class="text-gray-600 mt-2">Share wins, ask questions, discuss setups.</p>
+      </div>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('community.new_post') }}" class="btn-premium magnetic group">
+          <span>+ New Post</span>
+          <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+        </a>
+      {% else %}
+        <a href="{{ url_for('auth.signup') }}" class="btn-premium magnetic group">
+          <span>Join to Post</span>
+          <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Filter pills -->
+    <div class="flex flex-wrap items-center gap-2 mb-6 reveal-3d" style="animation-delay: 0.1s">
+      <a href="?category=all&sort={{ sort }}" class="px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all
+        {% if category == 'all' %}bg-brand-green-800 text-white shadow-md
+        {% else %}bg-white text-brand-green-800 border border-brand-green-200 hover:bg-brand-green-50{% endif %}">All</a>
+      {% set cat_icons = {'general': '💬', 'wins': '🏆', 'losses': '📉', 'setups': '📊', 'questions': '❓'} %}
+      {% for cat in ['general','wins','losses','setups','questions'] %}
+        <a href="?category={{ cat }}&sort={{ sort }}" class="px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all
+          {% if category == cat %}bg-brand-green-800 text-white shadow-md
+          {% else %}bg-white text-brand-green-800 border border-brand-green-200 hover:bg-brand-green-50{% endif %}">
+          {{ cat_icons[cat] }} {{ cat }}
+        </a>
+      {% endfor %}
+      <span class="ml-auto flex gap-2 items-center">
+        <span class="text-[10px] uppercase tracking-widest text-gray-500 font-black mr-1">Sort</span>
+        <a href="?category={{ category }}&sort=recent" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if sort == 'recent' %}bg-brand-green-700 text-white{% else %}bg-white border border-brand-green-200{% endif %}">Recent</a>
+        <a href="?category={{ category }}&sort=top" class="px-3 py-1.5 rounded-lg text-xs font-bold {% if sort == 'top' %}bg-brand-green-700 text-white{% else %}bg-white border border-brand-green-200{% endif %}">Top</a>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- POSTS LIST -->
+<section class="pb-12 relative">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    {% if posts %}
+    <div class="space-y-3 stagger-in">
+      {% for post in posts %}
+      <a href="{{ url_for('community.post_detail', post_id=post.id) }}" class="post-card group block">
+        <div class="relative rounded-xl p-4 lg:p-5 bg-white border-2 border-brand-green-100 transition-all duration-300 overflow-hidden hover:border-brand-green-400 hover:shadow-lg hover:shadow-brand-green-700/10 hover:-translate-y-0.5">
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-brand-green-500/20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+
+          <div class="flex items-start gap-4">
+            <!-- Avatar -->
+            <div class="flex-shrink-0">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-base shadow-md shadow-brand-green-700/30 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                {{ post.user.username[0]|upper }}
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-2 text-xs mb-1.5">
+                <span class="font-black text-brand-green-900">@{{ post.user.username }}</span>
+                <span class="text-gray-300">·</span>
+                <span class="text-gray-500 font-semibold">{{ post.created_at.strftime('%b %d, %Y') }}</span>
+                <span class="inline-block text-[10px] px-2 py-0.5 rounded-full bg-brand-green-50 text-brand-green-800 font-black uppercase tracking-wider">
+                  {{ post.category }}
+                </span>
+              </div>
+              <h3 class="font-black text-lg text-brand-green-900 leading-snug group-hover:text-brand-green-700 transition-colors line-clamp-2">{{ post.title }}</h3>
+              <p class="text-sm text-gray-600 mt-1.5 line-clamp-2 leading-relaxed">{{ post.body }}</p>
+
+              <!-- Meta row -->
+              <div class="flex items-center gap-4 mt-3">
+                <div class="flex items-center gap-1 text-xs font-bold text-brand-green-700">
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                  <span class="font-mono">{{ post.upvotes }}</span>
+                </div>
+                <div class="flex items-center gap-1 text-xs font-bold text-gray-500">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                  <span class="font-mono">{{ post.comments|length }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="flex-shrink-0 text-brand-green-700 text-lg font-bold opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
+              →
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="holo-card relative rounded-3xl p-12 text-center">
+      <div class="holo-inner">
+        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center mx-auto mb-6 shadow-xl shadow-brand-green-700/30 float">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+        </div>
+        <h2 class="text-2xl font-black mb-2 text-brand-green-900">No posts yet</h2>
+        <p class="text-gray-600 mb-6 max-w-md mx-auto">Be the first to start a conversation. Share a win, ask a question, or discuss your setup.</p>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('community.new_post') }}" class="btn-premium magnetic group inline-flex">
+            <span>+ Create First Post</span>
+            <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+          </a>
+        {% else %}
+          <a href="{{ url_for('auth.signup') }}" class="btn-premium magnetic group inline-flex">
+            <span>Sign up to post</span>
+            <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

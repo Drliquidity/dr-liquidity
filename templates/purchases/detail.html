@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Purchase #{{ purchase.id }} - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="py-10 lg:py-14 relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 hero-grid-bg -z-30"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-white via-brand-green-50/30 to-brand-green-100/20 -z-20"></div>
+  <div class="hero-orb hero-orb-1 -z-10 opacity-60"></div>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <a href="{{ url_for('purchases.list_purchases') }}" class="inline-flex items-center gap-1.5 text-sm text-brand-green-800 hover:text-brand-green-900 font-bold mb-4">
+      <span>←</span> Back to purchases
+    </a>
+    <span class="chip-premium mb-3 inline-flex">
+      <span class="live-dot"></span>
+      <span>Purchase #{{ purchase.id }}</span>
+    </span>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-black">
+        <span class="gradient-shimmer">{{ purchase.firm.name }}</span>
+      </h1>
+      {% if purchase.status == 'verified' %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-sm border border-emerald-200">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Verified
+        </span>
+      {% elif purchase.status == 'pending' %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-800 font-black text-sm border border-yellow-200">
+          ⏳ Pending Review
+        </span>
+      {% else %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-100 text-red-700 font-black text-sm border border-red-200">
+          ✗ Rejected
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- DETAILS -->
+<section class="pb-12 relative">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+
+    <!-- Big amount card -->
+    <div class="glass-card p-6 reveal-3d
+        {% if purchase.status == 'verified' %}bg-gradient-to-br from-emerald-50/50 to-brand-green-50/40{% endif %}">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Amount Paid</p>
+          <p class="font-mono font-black text-4xl lg:text-5xl mt-1
+            {% if purchase.status == 'verified' %}text-brand-green-700
+            {% else %}text-brand-green-900{% endif %}">
+            ${{ "{:,.2f}".format(purchase.amount_paid) }}
+          </p>
+        </div>
+        {% if purchase.discount_amount %}
+        <div class="text-right">
+          <p class="text-[10px] uppercase tracking-[0.2em] text-emerald-700 font-black">You Saved</p>
+          <p class="font-mono font-black text-2xl mt-1 text-emerald-600">${{ "{:,.2f}".format(purchase.discount_amount) }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Details grid -->
+    <div class="glass-card p-5 lg:p-6 reveal-3d" style="animation-delay: 0.1s">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="icon-premium" style="width:1.75rem;height:1.75rem;border-radius:0.5rem;">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Details</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-3 rounded-lg bg-brand-green-50/30 border border-brand-green-100">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Firm</p>
+          <p class="font-black text-brand-green-900 mt-0.5">{{ purchase.firm.name }}</p>
+        </div>
+        <div class="p-3 rounded-lg bg-brand-green-50/30 border border-brand-green-100">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Plan</p>
+          <p class="font-black text-brand-green-900 mt-0.5">{{ purchase.plan.name if purchase.plan else '—' }}</p>
+        </div>
+        <div class="p-3 rounded-lg bg-brand-green-50/30 border border-brand-green-100">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Purchase Date</p>
+          <p class="font-bold text-brand-green-900 mt-0.5">{{ purchase.purchase_date.strftime('%B %d, %Y') }}</p>
+        </div>
+        <div class="p-3 rounded-lg bg-brand-green-50/30 border border-brand-green-100">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Discount Code</p>
+          <p class="font-mono font-black text-brand-green-800 mt-0.5">{{ purchase.discount_code_used or '—' }}</p>
+        </div>
+        <div class="p-3 rounded-lg bg-brand-green-50/30 border border-brand-green-100">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Order Reference</p>
+          <p class="font-mono text-sm text-brand-green-900 mt-0.5 break-all">{{ purchase.order_reference or '—' }}</p>
+        </div>
+        <div class="p-3 rounded-lg bg-brand-green-50/30 border border-brand-green-100">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Account ID</p>
+          <p class="font-mono text-sm text-brand-green-900 mt-0.5">{{ purchase.account_id or '—' }}</p>
+        </div>
+      </div>
+
+      {% if purchase.receipt_url %}
+      <div class="mt-4 p-3 rounded-lg bg-blue-50/50 border border-blue-100">
+        <p class="text-[10px] uppercase tracking-widest text-blue-700 font-bold mb-1">Receipt</p>
+        <a href="{{ purchase.receipt_url }}" target="_blank" rel="noopener" class="text-brand-green-800 hover:text-brand-green-900 font-semibold text-sm break-all underline">{{ purchase.receipt_url }}</a>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if purchase.verified_at %}
+    <div class="glass-card p-5 lg:p-6 reveal-3d border-l-4 border-l-emerald-500" style="animation-delay: 0.15s">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        </div>
+        <div class="flex-1">
+          <p class="font-black text-brand-green-900">Verified on {{ purchase.verified_at.strftime('%B %d, %Y at %H:%M UTC') }}</p>
+          {% if purchase.verification_notes %}
+          <p class="text-sm text-gray-700 mt-2 leading-relaxed"><strong>Notes:</strong> {{ purchase.verification_notes }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if purchase.status == 'pending' %}
+    <div class="glass-card p-5 lg:p-6 border-l-4 border-l-yellow-500 reveal-3d" style="animation-delay: 0.15s">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-yellow-100 text-yellow-700 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+        </div>
+        <div>
+          <p class="font-black text-brand-green-900">Awaiting verification</p>
+          <p class="text-sm text-gray-600 mt-1">Our team reviews submissions within 24-48 hours. You'll get an email once verified.</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="flex flex-wrap gap-3 pt-2 reveal-3d" style="animation-delay: 0.2s">
+      <a href="{{ url_for('firms.firm_detail', slug=purchase.firm.slug) }}" class="btn-premium-outline magnetic group">
+        <span>View {{ purchase.firm.name }}</span>
+        <span class="text-base transition-transform group-hover:translate-x-1">→</span>
+      </a>
+      <form method="POST" action="{{ url_for('purchases.delete_purchase', purchase_id=purchase.id) }}" onsubmit="return confirm('Delete this purchase record?');" class="inline">
+        <button type="submit" class="px-4 py-2.5 text-sm font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">
+          🗑 Delete record
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

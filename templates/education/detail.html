@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} - {{ site_name }}{% endblock %}
+
+{% block content %}
+
+<!-- HERO HEADER -->
+<section class="relative scene-3d overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-brand-green-900 via-brand-green-800 to-emerald-900 -z-10"></div>
+  <div class="absolute inset-0 -z-10" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 24px 24px;"></div>
+  <div class="absolute top-0 right-0 w-96 h-96 bg-emerald-400/20 rounded-full blur-3xl -z-10"></div>
+  <div class="absolute bottom-0 left-0 w-96 h-96 bg-brand-green-400/20 rounded-full blur-3xl -z-10"></div>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 relative">
+    <a href="{{ url_for('education.list_articles') }}" class="inline-flex items-center gap-1.5 text-emerald-200 hover:text-white text-sm font-bold mb-6 transition-colors">
+      <span>←</span> All articles
+    </a>
+    <span class="px-2.5 py-1 rounded-full bg-white/15 backdrop-blur border border-white/20 text-[10px] font-black uppercase tracking-wider text-white">
+      {{ article.category }}
+    </span>
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white mt-4 leading-[1.1] tracking-tight">{{ article.title }}</h1>
+    <div class="flex flex-wrap items-center gap-3 mt-5 text-sm text-emerald-100/80">
+      {% if article.author %}
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-green-700 to-brand-green-900 text-white flex items-center justify-center font-black text-xs border border-white/20">
+          {{ article.author.username[0]|upper }}
+        </div>
+        <span class="font-bold text-white">@{{ article.author.username }}</span>
+      </div>
+      <span>·</span>
+      {% endif %}
+      <span>{{ article.created_at.strftime('%B %d, %Y') }}</span>
+      <span>·</span>
+      <span class="flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ article.read_time_min }} min read
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ARTICLE BODY -->
+<section class="py-10 lg:py-14 relative">
+  <div class="absolute inset-0 bg-gradient-to-b from-white to-brand-green-50/20 -z-10"></div>
+  <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Summary callout -->
+    <div class="glass-card p-5 lg:p-6 mb-8 reveal-3d">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">TL;DR</p>
+      <p class="text-lg text-brand-green-900 leading-relaxed font-bold mt-2">
+        {{ article.summary }}
+      </p>
+    </div>
+
+    <!-- Body -->
+    <div class="bg-white border-2 border-brand-green-100 rounded-2xl p-6 lg:p-10 reveal-3d" style="animation-delay: 0.1s">
+      <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed">
+        {{ article.body | replace('\n\n', '</p><p>') | safe }}
+      </div>
+    </div>
+
+    <!-- Share + meta footer -->
+    <div class="mt-6 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-2 text-xs text-gray-500 font-semibold">
+        <span>Found this useful?</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" class="px-3 py-1.5 rounded-lg bg-white border border-brand-green-200 text-xs font-bold text-brand-green-800 hover:bg-brand-green-50 transition-colors flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          Share
+        </button>
+        <button type="button" class="px-3 py-1.5 rounded-lg bg-white border border-brand-green-200 text-xs font-bold text-brand-green-800 hover:bg-brand-green-50 transition-colors flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+          Save
+        </button>
+      </div>
+    </div>
+
+    {% if related %}
+    <div class="mt-10">
+      <div class="flex items-center gap-2 mb-4">
+        <p class="text-[10px] uppercase tracking-[0.2em] text-brand-green-700 font-black">Keep Reading</p>
+        <div class="flex-1 h-px bg-gradient-to-r from-brand-green-200 to-transparent"></div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-in">
+        {% for r in related %}
+          <a href="{{ url_for('education.article_detail', slug=r.slug) }}" class="related-card group block">
+            <div class="relative h-full rounded-xl p-4 bg-white border-2 border-brand-green-100 overflow-hidden transition-all duration-300 hover:border-brand-green-400 hover:shadow-lg hover:-translate-y-0.5">
+              <div class="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-emerald-400/20 to-brand-green-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <span class="text-[10px] font-black uppercase tracking-wider text-brand-green-700 relative">{{ r.category }}</span>
+              <p class="font-black text-sm text-brand-green-900 mt-1.5 leading-snug line-clamp-2 relative">{{ r.title }}</p>
+              <span class="text-[10px] text-gray-500 font-semibold mt-2 inline-block relative">{{ r.read_time_min }}m read</span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </article>
+</section>
+
+<style>
+  .prose p { margin-bottom: 1.25rem; line-height: 1.75; }
+  .prose h2 { font-size: 1.5rem; font-weight: 800; margin-top: 2rem; margin-bottom: 0.75rem; color: #145a36; }
+  .prose h3 { font-size: 1.25rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #145a36; }
+  .prose ul, .prose ol { margin-left: 1.5rem; margin-bottom: 1.25rem; }
+  .prose li { margin-bottom: 0.5rem; }
+  .prose strong { color: #0a3520; font-weight: 700; }
+  .prose code { background: #e8f5ed; color: #0a3520; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.875em; }
+  .prose blockquote { border-left: 4px solid #145a36; padding: 0.5rem 0 0.5rem 1rem; color: #4b5563; font-style: italic; margin: 1.5rem 0; background: linear-gradient(90deg, #f0fdf4 0%, transparent 100%); border-radius: 0 0.5rem 0.5rem 0; }
+  .prose a { color: #145a36; text-decoration: underline; text-decoration-color: #10b981; text-underline-offset: 2px; }
+  .prose a:hover { color: #10b981; }
+</style>
+{% endblock %}

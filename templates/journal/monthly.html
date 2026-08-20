@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block title %}Monthly Calendar - {{ site_name }} Journal{% endblock %}
+
+{% block content %}
+<section class="py-10 mesh-bg min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest text-brand-green-700">Journal · Monthly Calendar</p>
+        <h1 class="text-3xl lg:text-4xl font-extrabold mt-1">Year Overview</h1>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('journal.weekly_view') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Weekly</a>
+        <a href="{{ url_for('journal.calendar_view') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">Calendar</a>
+        <a href="{{ url_for('journal.list_entries') }}" class="px-4 py-2 border-2 border-brand-green-800 text-brand-green-800 text-sm font-semibold rounded-lg hover:bg-brand-green-50">List</a>
+        <a href="{{ url_for('journal.new_entry') }}" class="btn-3d px-4 py-2 bg-brand-green-800 text-white text-sm font-semibold rounded-lg">+ New Trade</a>
+      </div>
+    </div>
+
+    <!-- Year nav + summary -->
+    <div class="holo-card relative rounded-2xl p-6 mb-6 glow-ambient">
+      <div class="holo-inner">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+          <div class="flex items-center gap-2">
+            <a href="{{ url_for('journal.monthly_view', year=year-1) }}" class="p-2 rounded-lg bg-white/70 border border-brand-green-200 hover:bg-brand-green-50 hover:border-brand-green-400 transition">
+              <svg class="w-5 h-5 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+            <h2 class="text-3xl lg:text-4xl font-extrabold text-brand-green-900 min-w-[140px] text-center">{{ year }}</h2>
+            {% if year < today_year %}
+            <a href="{{ url_for('journal.monthly_view', year=year+1) }}" class="p-2 rounded-lg bg-white/70 border border-brand-green-200 hover:bg-brand-green-50 hover:border-brand-green-400 transition">
+              <svg class="w-5 h-5 text-brand-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            {% endif %}
+          </div>
+          <a href="{{ url_for('journal.monthly_view') }}" class="text-sm font-semibold text-brand-green-700 hover:text-brand-green-900">Jump to current year</a>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">{{ year }} Net P&L</p>
+            <p class="text-2xl font-extrabold font-mono mt-0.5 {% if year_total_pnl >= 0 %}text-brand-green-900 text-glow{% else %}text-red-700{% endif %}">
+              {% if year_total_pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(year_total_pnl) }}
+            </p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Total Trades</p>
+            <p class="text-2xl font-extrabold text-brand-green-900 mt-0.5">{{ year_total_trades }}</p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">Win Rate</p>
+            <p class="text-2xl font-extrabold mt-0.5 {% if year_win_rate >= 50 %}text-brand-green-700 text-glow{% else %}text-red-600{% endif %}">{{ "%.0f"|format(year_win_rate) }}%</p>
+          </div>
+          <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+            <p class="text-xs text-gray-500 uppercase font-bold">W / L</p>
+            <p class="text-2xl font-extrabold mt-0.5">
+              <span class="text-brand-green-700">{{ year_winners }}</span>
+              <span class="text-gray-300">/</span>
+              <span class="text-red-600">{{ year_losers }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12-month grid (4 cols × 3 rows) -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 stagger-in mb-8">
+      {% for m in months %}
+      <a href="{{ url_for('journal.monthly_view', year=m.year, month=m.month) }}"
+         class="holo-card relative block rounded-2xl p-5 glow-border transition-all
+                {% if m.is_current %}ring-2 ring-emerald-accent-500 ring-offset-2{% endif %}
+                {% if m.is_focus %}ring-2 ring-brand-green-700 ring-offset-2{% endif %}">
+        <span class="tilt-shine rounded-2xl"></span>
+        <div class="holo-inner">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-xl font-extrabold text-brand-green-900">{{ m.name }}</h3>
+            <div class="flex gap-1">
+              {% if m.is_focus %}<span class="text-[10px] uppercase font-bold tracking-wider bg-brand-green-700 text-white px-2 py-0.5 rounded">View</span>{% endif %}
+              {% if m.is_current and not m.is_focus %}<span class="text-[10px] uppercase font-bold tracking-wider bg-emerald-accent-500 text-white px-2 py-0.5 rounded">Now</span>{% endif %}
+            </div>
+          </div>
+
+          <div class="aspect-[5/3] rounded-xl flex flex-col items-center justify-center mb-3
+              {% if m.pnl > 0 %}{% if m.pnl > 5000 %}bg-brand-green-600 text-white
+              {% elif m.pnl > 2000 %}bg-brand-green-400 text-brand-green-900
+              {% else %}bg-brand-green-200 text-brand-green-900
+              {% endif %}{% elif m.pnl < 0 %}{% if m.pnl < -2000 %}bg-red-600 text-white
+              {% elif m.pnl < -500 %}bg-red-400 text-red-900
+              {% else %}bg-red-200 text-red-900
+              {% endif %}{% else %}bg-white/70 border-2 border-brand-green-100 text-gray-400
+              {% endif %}">
+            {% if m.pnl != 0 %}
+            <p class="text-[9px] uppercase tracking-wider font-bold opacity-80">Net P&L</p>
+            <p class="font-mono font-extrabold text-3xl leading-none mt-0.5 {% if m.pnl > 0 %}text-glow{% endif %}">
+              {% if m.pnl >= 0 %}+{% endif %}${{ "%.0f"|format(m.pnl) }}
+            </p>
+            {% else %}
+            <p class="text-2xl">📅</p>
+            <p class="text-[10px] mt-1">No trades</p>
+            {% endif %}
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="text-center p-2 bg-white/60 rounded-lg">
+              <p class="text-[10px] text-gray-500 uppercase font-bold">Trades</p>
+              <p class="font-extrabold text-brand-green-900">{{ m.trades }}</p>
+            </div>
+            <div class="text-center p-2 bg-white/60 rounded-lg">
+              <p class="text-[10px] text-gray-500 uppercase font-bold">Win Rate</p>
+              <p class="font-extrabold {% if m.win_rate >= 50 %}text-brand-green-700{% elif m.win_rate > 0 %}text-red-600{% else %}text-gray-400{% endif %}">
+                {% if m.win_rate > 0 %}{{ "%.0f"|format(m.win_rate) }}%{% else %}—{% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- FOCUS MONTH DETAIL -->
+    <div class="mb-6">
+      <div class="flex flex-wrap items-end justify-between gap-3 mb-4">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-widest text-brand-green-700">Focus Month</p>
+          <h2 class="text-2xl lg:text-3xl font-extrabold text-brand-green-900">{{ focus_month_name }} {{ year }} Details</h2>
+        </div>
+        <a href="{{ url_for('journal.monthly_view', year=year, month=focus_month) }}#weekly" class="px-3 py-1.5 text-sm font-semibold text-brand-green-700 hover:text-brand-green-900">Jump to weekly ↓</a>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- LEFT 2/3: Premium P&L Detailed Report -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Premium P&L hero card -->
+          <div class="holo-card relative rounded-2xl p-7 glow-ambient-strong overflow-hidden">
+            <span class="tilt-shine rounded-2xl"></span>
+            <div class="holo-inner relative z-10">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-brand-green-700 font-bold flex items-center gap-2">
+                    <span class="glow-dot"></span>
+                    Premium P&L
+                  </p>
+                  <h3 class="text-2xl font-extrabold text-brand-green-900 mt-1">DR Liquidity · {{ focus_month_name }} {{ year }}</h3>
+                </div>
+                <a href="{{ url_for('journal.export_monthly', year=year, month=focus_month) }}"
+                   class="btn-3d magnetic px-4 py-2.5 bg-brand-green-800 text-white text-sm font-bold rounded-lg flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  Download CSV
+                </a>
+              </div>
+
+              <!-- Big net P&L -->
+              <div class="flex items-end justify-between mb-6">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase tracking-wider font-bold">Net P&L (after fees)</p>
+                  <p class="text-6xl lg:text-7xl font-extrabold font-mono mt-1 {% if focus_net_pnl >= 0 %}text-brand-green-900 text-glow-strong{% else %}text-red-700{% endif %}">
+                    {% if focus_net_pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(focus_net_pnl) }}
+                  </p>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Gross ${{ "{:,.0f}".format(focus_gross_pnl) }} − Fees ${{ "{:,.0f}".format(focus_total_fees) }}
+                  </p>
+                </div>
+                {% if equity_curve|length > 1 %}
+                <svg viewBox="0 0 {{ equity_curve|length * 20 }} 100" class="w-48 h-24" preserveAspectRatio="none">
+                  {% set mn = equity_curve|map(attribute='equity')|min %}
+                  {% set mx = equity_curve|map(attribute='equity')|max %}
+                  {% set rng = (mx - mn) or 1 %}
+                  <polyline fill="none" stroke="#145a36" stroke-width="2.5"
+                    points="
+                    {% for p in equity_curve %}
+                      {{ loop.index0 * 20 }},{{ 100 - ((p.equity - mn) / rng * 90 + 5) }}
+                    {% endfor %}
+                    "/>
+                  <polyline fill="rgba(20,90,54,0.15)" stroke="none"
+                    points="0,100
+                    {% for p in equity_curve %}{{ loop.index0 * 20 }},{{ 100 - ((p.equity - mn) / rng * 90 + 5) }}{% endfor %}
+                    {{ equity_curve|length * 20 }},100"/>
+                </svg>
+                {% endif %}
+              </div>
+
+              <!-- Stats grid -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+                  <p class="text-xs text-gray-500 uppercase font-bold">Trades</p>
+                  <p class="text-2xl font-extrabold text-brand-green-900 mt-0.5">{{ focus_total }}</p>
+                </div>
+                <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+                  <p class="text-xs text-gray-500 uppercase font-bold">Win Rate</p>
+                  <p class="text-2xl font-extrabold mt-0.5 {% if focus_win_rate >= 50 %}text-brand-green-700 text-glow{% else %}text-red-600{% endif %}">{{ "%.0f"|format(focus_win_rate) }}%</p>
+                </div>
+                <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+                  <p class="text-xs text-gray-500 uppercase font-bold">Contracts</p>
+                  <p class="text-2xl font-extrabold font-mono text-brand-green-900 mt-0.5">{{ focus_contracts }}</p>
+                </div>
+                <div class="p-3 bg-white/70 backdrop-blur border border-brand-green-100 rounded-lg">
+                  <p class="text-xs text-gray-500 uppercase font-bold">Avg Win/Loss</p>
+                  <p class="text-base font-extrabold font-mono mt-1">
+                    <span class="text-brand-green-700">+${{ "{:,.0f}".format(focus_avg_win) }}</span>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-red-600">-${{ "{:,.0f}".format(focus_avg_loss|abs) }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Best & worst -->
+              {% if focus_largest_win or focus_largest_loss %}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                {% if focus_largest_win %}
+                <div class="p-4 bg-brand-green-50 border border-brand-green-200 rounded-xl">
+                  <p class="text-xs uppercase tracking-wider text-brand-green-700 font-bold mb-1">🏆 Biggest Win</p>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-mono font-bold">{{ focus_largest_win.symbol }} {{ focus_largest_win.direction }}</p>
+                      <p class="text-xs text-gray-500">{{ focus_largest_win.trade_date.strftime('%b %d') }} · {{ focus_largest_win.contracts }}x @ {{ "%.0f"|format(focus_largest_win.entry_price) }}</p>
+                    </div>
+                    <p class="font-mono font-extrabold text-lg text-brand-green-700 text-glow">+${{ "{:,.0f}".format(focus_largest_win.pnl) }}</p>
+                  </div>
+                </div>
+                {% endif %}
+                {% if focus_largest_loss %}
+                <div class="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p class="text-xs uppercase tracking-wider text-red-700 font-bold mb-1">📉 Biggest Loss</p>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-mono font-bold">{{ focus_largest_loss.symbol }} {{ focus_largest_loss.direction }}</p>
+                      <p class="text-xs text-gray-500">{{ focus_largest_loss.trade_date.strftime('%b %d') }} · {{ focus_largest_loss.contracts }}x @ {{ "%.0f"|format(focus_largest_loss.entry_price) }}</p>
+                    </div>
+                    <p class="font-mono font-extrabold text-lg text-red-600">-${{ "{:,.0f}".format(focus_largest_loss.pnl|abs) }}</p>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- By Symbol & By Strategy -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% if by_symbol %}
+            <div class="holo-card relative rounded-2xl p-5">
+              <div class="holo-inner">
+                <h4 class="text-sm font-extrabold text-brand-green-900 uppercase tracking-wider mb-3">By Symbol</h4>
+                <div class="space-y-2">
+                  {% for sym, s in by_symbol %}
+                  <div class="flex items-center justify-between p-2 bg-white/70 rounded-lg border border-brand-green-100">
+                    <div class="flex items-center gap-2">
+                      <span class="font-mono font-bold text-sm">{{ sym }}</span>
+                      <span class="text-xs text-gray-500">{{ s.trades }}t · {{ "%.0f"|format(s.wins/s.trades*100) }}% WR</span>
+                    </div>
+                    <span class="font-mono font-bold {% if s.pnl >= 0 %}text-brand-green-700 text-glow{% else %}text-red-600{% endif %}">
+                      {% if s.pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(s.pnl) }}
+                    </span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if by_strategy %}
+            <div class="holo-card relative rounded-2xl p-5">
+              <div class="holo-inner">
+                <h4 class="text-sm font-extrabold text-brand-green-900 uppercase tracking-wider mb-3">By Strategy</h4>
+                <div class="space-y-2">
+                  {% for strat, s in by_strategy %}
+                  <div class="flex items-center justify-between p-2 bg-white/70 rounded-lg border border-brand-green-100">
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-sm">{{ strat }}</span>
+                      <span class="text-xs text-gray-500">{{ s.trades }}t · {{ "%.0f"|format(s.wins/s.trades*100) }}% WR</span>
+                    </div>
+                    <span class="font-mono font-bold {% if s.pnl >= 0 %}text-brand-green-700 text-glow{% else %}text-red-600{% endif %}">
+                      {% if s.pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(s.pnl) }}
+                    </span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- RIGHT 1/3: Weekly Breakdown -->
+        <div class="space-y-4" id="weekly">
+          <div class="holo-card relative rounded-2xl p-5 glow-ambient sticky top-20">
+            <div class="holo-inner">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-extrabold text-brand-green-900 uppercase tracking-wider">Week Breakdown</h3>
+                <span class="text-[10px] uppercase font-bold tracking-wider bg-brand-green-100 text-brand-green-800 px-2 py-0.5 rounded">Total Trades</span>
+              </div>
+              <p class="text-xs text-gray-500 mb-4">{{ focus_month_name }} {{ year }} — Mon-Fri weeks</p>
+
+              <div class="space-y-2">
+                {% for w in weeks %}
+                <div class="p-3 rounded-xl border-2 transition
+                    {% if w.net > 0 %}{% if w.net > 1000 %}bg-brand-green-100 border-brand-green-400
+                    {% else %}bg-brand-green-50 border-brand-green-200
+                    {% endif %}{% elif w.net < 0 %}{% if w.net < -500 %}bg-red-100 border-red-400
+                    {% else %}bg-red-50 border-red-200
+                    {% endif %}{% else %}bg-white border-gray-200
+                    {% endif %}">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold text-brand-green-900">Week {{ w.week }}</span>
+                    <span class="text-[10px] text-gray-500">{{ w.start.strftime('%b %d') }}–{{ w.end.strftime('%d') }}</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-mono font-extrabold text-lg {% if w.net >= 0 %}text-brand-green-700 text-glow{% else %}text-red-600{% endif %}">
+                        {% if w.net >= 0 %}+{% endif %}${{ "{:,.0f}".format(w.net) }}
+                      </p>
+                      <p class="text-[10px] text-gray-500">Total Profit</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-extrabold text-sm text-brand-green-900">{{ w.trades }}</p>
+                      <p class="text-[10px] text-gray-500">Total Trades</p>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-brand-green-200">
+                <div class="flex items-center justify-between p-3 bg-gradient-to-r from-brand-green-100 to-brand-green-200 rounded-xl">
+                  <span class="text-xs uppercase font-extrabold text-brand-green-900">Month Total</span>
+                  <span class="font-mono font-extrabold text-xl text-brand-green-900 text-glow">
+                    {% if focus_net_pnl >= 0 %}+{% endif %}${{ "{:,.0f}".format(focus_net_pnl) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs">
+      <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-brand-green-600"></div><span class="text-gray-600">Big month +$5K+</span></div>
+      <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-brand-green-400"></div><span class="text-gray-600">Medium +$2-5K</span></div>
+      <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-brand-green-200"></div><span class="text-gray-600">Small win</span></div>
+      <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-red-200"></div><span class="text-gray-600">Small loss</span></div>
+      <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-red-400"></div><span class="text-gray-600">Medium loss</span></div>
+      <div class="flex items-center gap-1.5"><div class="w-4 h-4 rounded bg-red-600"></div><span class="text-gray-600">Big month -$2K+</span></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
